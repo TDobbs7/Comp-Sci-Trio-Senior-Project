@@ -4,23 +4,36 @@
 1 verbose cli   'start' ]
 2 info using npm@2.14.7
 3 info using node@v4.2.2
-4 verbose stack Error: Invalid name: "Senior Project"
-4 verbose stack     at ensureValidName (C:\Program Files\nodejs\node_modules\npm\node_modules\normalize-package-data\lib\fixer.js:331:15)
-4 verbose stack     at Object.module.exports.fixNameField (C:\Program Files\nodejs\node_modules\npm\node_modules\normalize-package-data\lib\fixer.js:210:5)
-4 verbose stack     at C:\Program Files\nodejs\node_modules\npm\node_modules\normalize-package-data\lib\normalize.js:32:38
-4 verbose stack     at Array.forEach (native)
-4 verbose stack     at normalize (C:\Program Files\nodejs\node_modules\npm\node_modules\normalize-package-data\lib\normalize.js:31:15)
-4 verbose stack     at final (C:\Program Files\nodejs\node_modules\npm\node_modules\read-package-json\read-json.js:338:5)
-4 verbose stack     at then (C:\Program Files\nodejs\node_modules\npm\node_modules\read-package-json\read-json.js:113:5)
-4 verbose stack     at ReadFileContext.<anonymous> (C:\Program Files\nodejs\node_modules\npm\node_modules\read-package-json\read-json.js:284:20)
-4 verbose stack     at ReadFileContext.callback (C:\Program Files\nodejs\node_modules\npm\node_modules\graceful-fs\graceful-fs.js:76:16)
-4 verbose stack     at FSReqWrap.readFileAfterOpen [as oncomplete] (fs.js:303:13)
-5 verbose cwd C:\Users\TDobbs7\Documents\Programming\COMP 496\Senior Project\Comp-Sci-Trio-Senior-Project\Senior Project
-6 error Windows_NT 10.0.10586
-7 error argv "C:\\Program Files\\nodejs\\node.exe" "C:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js" "start"
-8 error node v4.2.2
-9 error npm  v2.14.7
-10 error Invalid name: "Senior Project"
-11 error If you need help, you may report this error at:
-11 error     <https://github.com/npm/npm/issues>
-12 verbose exit [ 1, true ]
+4 verbose run-script [ 'prestart', 'start', 'poststart' ]
+5 info prestart Senior_Project@0.0.0
+6 info start Senior_Project@0.0.0
+7 verbose unsafe-perm in lifecycle true
+8 info Senior_Project@0.0.0 Failed to exec start script
+9 verbose stack Error: Senior_Project@0.0.0 start: `node ./bin/www`
+9 verbose stack Exit status 1
+9 verbose stack     at EventEmitter.<anonymous> (C:\Program Files\nodejs\node_modules\npm\lib\utils\lifecycle.js:214:16)
+9 verbose stack     at emitTwo (events.js:87:13)
+9 verbose stack     at EventEmitter.emit (events.js:172:7)
+9 verbose stack     at ChildProcess.<anonymous> (C:\Program Files\nodejs\node_modules\npm\lib\utils\spawn.js:24:14)
+9 verbose stack     at emitTwo (events.js:87:13)
+9 verbose stack     at ChildProcess.emit (events.js:172:7)
+9 verbose stack     at maybeClose (internal/child_process.js:818:16)
+9 verbose stack     at Process.ChildProcess._handle.onexit (internal/child_process.js:211:5)
+10 verbose pkgid Senior_Project@0.0.0
+11 verbose cwd C:\Users\TDobbs7\Documents\Programming\COMP 496\Senior Project\Comp-Sci-Trio-Senior-Project\Senior Project
+12 error Windows_NT 10.0.10586
+13 error argv "C:\\Program Files\\nodejs\\node.exe" "C:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js" "start"
+14 error node v4.2.2
+15 error npm  v2.14.7
+16 error code ELIFECYCLE
+17 error Senior_Project@0.0.0 start: `node ./bin/www`
+17 error Exit status 1
+18 error Failed at the Senior_Project@0.0.0 start script 'node ./bin/www'.
+18 error This is most likely a problem with the Senior_Project package,
+18 error not with npm itself.
+18 error Tell the author that this fails on your system:
+18 error     node ./bin/www
+18 error You can get their info via:
+18 error     npm owner ls Senior_Project
+18 error There is likely additional logging output above.
+19 verbose exit [ 1, true ]

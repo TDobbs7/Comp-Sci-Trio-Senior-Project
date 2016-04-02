@@ -13,6 +13,11 @@ body-signin {
 .form-signin .checkbox {
   margin-bottom: 10px;
 }
+
+.white-font {
+  color: #FFFFFF;
+}
+
 .form-signin .checkbox {
   font-weight: normal;
 }

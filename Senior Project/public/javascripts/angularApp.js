@@ -2,6 +2,29 @@
 
 var app = angular.module('senior_project', ['ngRoute']);
 
+app.config(['$routeProvider', 'USER_ROLES',
+    function($routeProvider, USER_ROLES) {
+
+        $routeProvider.
+            when('/', {
+                templateUrl: '/views/login.html',
+                controller: 'UserCtrl',
+                require_login: false,
+                good_roles: [USER_ROLES.judge, USER_ROLES.evt_admin, USER_ROLES.sys_admin]
+            }).
+            when('/register', {
+                templateUrl: '/views/registerHTML.html',
+                controller: 'UserCtrl',
+                require_login: false,
+                good_roles: [USER_ROLES.judge, USER_ROLES.evt_admin, USER_ROLES.sys_admin]
+            }).
+            otherwise({
+                redirectTo: '/'
+            });
+    }
+]);
+
+
 app.run(function($location, $rootScope, $route, AuthenticationService, UserService) {
     $rootScope.location = $location;
     $rootScope.currentUser = JSON.parse(window.localStorage.getItem("user"));
@@ -58,21 +81,6 @@ app.run(function($location, $rootScope, $route, AuthenticationService, UserServi
   });
 });
 
-app.config(['$routeProvider', 'USER_ROLES',
-    function($routeProvider, USER_ROLES) {
-        $routeProvider.
-            when('/', {
-                templateUrl: '/views/login.html',
-                controller: 'UserCtrl',
-                require_login: false,
-                good_roles: [USER_ROLES.judge, USER_ROLES.evt_admin, USER_ROLES.sys_admin]
-            }).
-            otherwise({
-                redirectTo: '/'
-            });
-    }
-]);
-
 app.constant('USER_ROLES', {
     judge: 'judge',
     evt_admin: 'evt_admin',
@@ -115,12 +123,13 @@ app.factory('UserService', ['$http', '$rootScope',
        // private functions
 
        function handleSuccess(res) {
-          // return { success : true, data: res.data };
+           return {"success" : true, "data" : res.data};
        }
 
        function handleError(error) {
-          return { success: false, message: error };
-          //throw(error);
+          //return { success: false, message: error };
+           return {"success" : false, "message" : error};
+          //Promise.reject(doc).then(function(doc){}, function(doc){ return doc; });
        }
     }
 ])
@@ -136,13 +145,13 @@ app.factory('UserService', ['$http', '$rootScope',
 
         return service;
 
-        function Login(username, password) {
+        function Login(email, password) {
           var credentials = {
-            'username' : username,
+            'email' : email,
             'password' : password
           }
 
-          return UserService.Login(credentials).then(handleSuccess, handleError("Invalid username and/or password"));
+          return UserService.Login(credentials).then(handleSuccess, handleError("Invalid email and/or password"));
         }
 
         function isAuthenticated() {
@@ -165,35 +174,70 @@ app.factory('UserService', ['$http', '$rootScope',
           return (good_roles.indexOf($rootScope.currentUser.user_role) !== -1);
         }
 
-        function handleSuccess(res) {
+        /*function handleSuccess(res) {
             /*var doc = res.data.user;
             doc.timestamp = res.data.timestamp;
             doc.last_login = new Date(Date.parse(doc.last_login)).toLocaleString();
 
             return { success : true, data: doc };*/
 
-            var doc = res.data;
+            /*var doc = res.data;
+            console.log("res.data= " + res.data);
+
+            Promise.resolve(res);
         }
 
         function handleError(error) {
             return { success: false, message: error };
+        }*/
+
+        function handleSuccess(res) {
+            // return { success : true, data: res.data };
+           /*if (res.data.success) {
+              var doc = {"success" : true, "data" : res.data};
+              Promise.resolve(doc).then(function(doc){ return doc; }, function(doc){});
+           }*/
+
+           return {"success" : true, "data" : res.data};
+        }
+
+        function handleError(error) {
+            //return { success: false, message: error };
+            /*var doc = {"success" : false, "message" : error};
+            Promise.reject(doc).then(function(doc){}, function(doc){ return doc; });*/
+
+            return {"success" : false, "message" : error};
         }
     }
 ]);
 
-app.controller('UserCtrl', ['$scope', '$rootScope', 'USER_ROLES', 'AuthenticationService',
-    function($scope, $rootScope, USER_ROLES, AuthenticationService) {
+app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', 'AuthenticationService', 'UserService',
+    function($scope, $rootScope, $location, USER_ROLES, AuthenticationService, UserService) {
         $scope.login = function(email, password) {
-            AuthenticationService.Login(email, password).then(successLogin, failedLogin);
+            AuthenticationService.Login(email, password).then(successLogin, failed);
         };
 
         function successLogin(res) {
             AuthenticationService.setCurrentUser(res.data);
-            $location.path('/home');
+            //$location.path('/home');
+            alert("You logged in successfully!");
         }
 
-        function failedLogin(res) {
+        function failed(res) {
             $rootScope.stopAndReport(res.data);
+        }
+
+        $scope.register = function(user) {
+            if (user.password !== user.password2) $rootScope.stopAndReport({'message' : "Your passwords didn't match!"});
+            else {
+                delete user.password2;
+
+                UserService.AddNewUser({"name" : user.fname + " " + user.lname, "email" : user.email, "password" : user.password})
+                    .then(function(res) {
+                        alert("You have registered!");
+                        $location.path('/');
+                    }, failed);
+            }
         }
     }
 ]);
