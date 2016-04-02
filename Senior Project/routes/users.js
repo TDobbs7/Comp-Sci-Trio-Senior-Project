@@ -37,13 +37,23 @@ router.post('/login', function(req, res, next) {
     var email = req.body.email;
     var password = req.body.password;
 
-    User.findOne({'email' : email, 'password' : password}, 'name user_role last_login', function(err,user) {
+    User.findOne({'email' : email, 'password' : password}, function(err,user) {
         if (err) return next(err);
 
-        if (!user) res.json({"success" : "false", "message" : "Invalid username and/or password"});
+        if (!user) {
+            console.log("Welp");
+            res.json({"success" : "false", "message" : "Invalid username and/or password"});
+        }
         else {
+            var doc = {
+                "name" : user.name,
+                "email" : user.email,
+                "last_login" : user.last_login,
+                "user_role" : user.user_role
+            };
+
             var timestamp = new Date(new Date().getTime()).toLocaleString();
-            res.json({"success" : "true", "user" : user, "timestamp" : timestamp});
+            res.json({"success" : "true", "user" : doc, "timestamp" : timestamp});
         }
     });
 });
@@ -52,19 +62,19 @@ router.put('/:email', function(req, res, next) {
   var aUser = new User(req.body);
 
   User.findOne({"email" : req.params.email}, function(err, user) {
-    /*if (err) return next(err);
-    if (!user) res.status(500).json({"message" : "User " + req.params.username + " can't be updated at this time"});
+    if (err) return next(err);
+    if (!user) res.status(500).json({"message" : "User " + req.params.email + " can't be updated at this time"});
 
     else {
         aUser._id = user._id;
         aUser.last_update = JSON.parse(JSON.stringify({"timestamp" : new Date(new Date().getTime()).toUTCString()}));
 
-        User.update({'username' : req.params.username}, aUser, {'upsert' : true}, function(err2) {
+        User.update({'email' : req.params.email}, aUser, {'upsert' : true}, function(err2) {
             if (err2) return next(err2);
 
             res.send(JSON.parse(JSON.stringify({"timestamp" : new Date(new Date().getTime()).toUTCString()})));
         });
-    }*/
+    }
   });
 });
 

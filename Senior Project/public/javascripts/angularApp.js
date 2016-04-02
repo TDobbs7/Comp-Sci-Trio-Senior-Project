@@ -17,6 +17,12 @@ app.config(['$routeProvider', 'USER_ROLES',
                 require_login: false,
                 good_roles: [USER_ROLES.judge, USER_ROLES.evt_admin, USER_ROLES.sys_admin]
             }).
+            when('/home', {
+                templateUrl: 'views/userPageHTML.html',
+                controller: 'UserCtrl',
+                require_login: true,
+                good_roles: [USER_ROLES.judge, USER_ROLES.evt_admin, USER_ROLES.sys_admin]
+            }).
             otherwise({
                 redirectTo: '/'
             });
@@ -26,13 +32,13 @@ app.config(['$routeProvider', 'USER_ROLES',
 
 app.run(function($location, $rootScope, $route, AuthenticationService, UserService) {
     $rootScope.location = $location;
-    $rootScope.currentUser = JSON.parse(window.localStorage.getItem("user"));
+    $rootScope.currentUserData = JSON.parse(window.localStorage.getItem("user"));
     $rootScope.requestedPerson = JSON.parse(window.localStorage.getItem("req_person"));
     $rootScope.requestedUser = JSON.parse(window.localStorage.getItem("req_user"));
 
     $rootScope.logout = function() {
-        $rootScope.currentUser.last_login = $rootScope.currentUser.timestamp;
-        UserService.UpdateUser($rootScope.currentUser).then(function(res) {
+        $rootScope.currentUserData.user.last_login = $rootScope.currentUserData.timestamp;
+        UserService.UpdateUser($rootScope.currentUserData.user).then(function(res) {
             AuthenticationService.clearCurrentUser();
 
             $location.path('/');
@@ -40,21 +46,16 @@ app.run(function($location, $rootScope, $route, AuthenticationService, UserServi
         }, function(res) {
           $rootScope.stopAndReport(res);
         });
+
+        /*AuthenticationService.clearCurrentUser();
+
+        $location.path('/');
+        alert("You have logged out");*/
     };
 
     $rootScope.stopAndReport = function(res) {
         event.preventDefault();
         alert(res.message);
-    }
-
-    $rootScope.setRequestedPerson = function(person) {
-        window.localStorage.setItem("req_person", JSON.stringify(person));
-        $rootScope.requestedPerson = person;
-    }
-
-    $rootScope.clearRequestedPerson = function() {
-        window.localStorage.removeItem("req_stu");
-        $rootScope.requestedPerson = null;
     }
 
     $rootScope.$on('$locationChangeStart', function(event, next, current) {
@@ -71,7 +72,7 @@ app.run(function($location, $rootScope, $route, AuthenticationService, UserServi
             $location.path('/');
           }
           else if (!AuthenticationService.isAuthorized(next_route.good_roles)) {
-            $rootScope.stopAndReport({'message' : "You are not authorized to view this page"});
+            $rootScope.stopAndReport({'message' : "You are not authorized to view this page : " + $rootScope.currentUserData.user.user_role});
 
             next_path = '/home';
             $location.path(next_path);
@@ -91,7 +92,7 @@ app.factory('UserService', ['$http', '$rootScope',
         var service = {};
 
         service.GetAllUsers = GetAllUsers;
-        service.GetByUsername = GetByUsername;
+        service.GetByEmail = GetByEmail;
         service.AddNewUser = AddNewUser;
         service.UpdateUser = UpdateUser;
         service.Login = Login;
@@ -102,8 +103,8 @@ app.factory('UserService', ['$http', '$rootScope',
             return $http.get('/users').then(handleSuccess, handleError('Error getting all users'));
         }
 
-        function GetByUsername(username) {
-            return $http.get('/users/username/' + username).then(handleSuccess, handleError('Error getting user by username'));
+        function GetByEmail(email) {
+            return $http.get('/users/email/' + email).then(handleSuccess, handleError('Error getting user by username'));
         }
 
         function AddNewUser(user) {
@@ -115,8 +116,7 @@ app.factory('UserService', ['$http', '$rootScope',
         }
 
         function UpdateUser(user) {
-            user.last_updated_by = $rootScope.currentUser.username;
-            return $http.put('/users/' + user.username, user).then(handleSuccess, handleError('Error updating user'));
+            return $http.put('/users/' + user.email, user).then(handleSuccess, handleError('Error updating user'));
         }
 
         // private functions
@@ -126,9 +126,7 @@ app.factory('UserService', ['$http', '$rootScope',
         }
 
         function handleError(error) {
-            //return { success: false, message: error };
             return {"success" : false, "message" : error};
-            //Promise.reject(doc).then(function(doc){}, function(doc){ return doc; });
         }
     }
 ])
@@ -145,36 +143,36 @@ app.factory('UserService', ['$http', '$rootScope',
         return service;
 
         function Login(email, password) {
-          var credentials = {
-            'email' : email,
-            'password' : password
-          }
+            var credentials = {
+                'email' : email,
+                'password' : password
+            }
 
-          return UserService.Login(credentials).then(handleSuccess, handleError("Invalid email and/or password"));
+            return UserService.Login(credentials).then(handleSuccess, handleError("Invalid email and/or password"));
         }
 
         function isAuthenticated() {
-          return ($rootScope.currentUser !== null);
+            return ($rootScope.currentUserData !== null);
         }
 
-        function setCurrentUser(user) {
-          window.localStorage.setItem("user", JSON.stringify(user));
-          $rootScope.currentUser = user;
+        function setCurrentUser(data) {
+            window.localStorage.setItem("user", JSON.stringify(data));
+            $rootScope.currentUserData = data;
         }
 
         function clearCurrentUser() {
-          window.localStorage.clear();
-          $rootScope.currentUser = null;
-          $rootScope.requestedPerson = null;
-          $rootScope.requestedUser = null;
+            window.localStorage.clear();
+            $rootScope.currentUserData = null;
+            $rootScope.requestedPerson = null;
+            $rootScope.requestedUser = null;
         }
 
         function isAuthorized(good_roles) {
-          return (good_roles.indexOf($rootScope.currentUser.user_role) !== -1);
+            return (good_roles.indexOf($rootScope.currentUserData.user.user_role) !== -1);
         }
 
         function handleSuccess(res) {
-           return {"success" : true, "data" : res.data};
+            if (res.success) return {"success" : true, "data" : res.data};
         }
 
         function handleError(error) {
@@ -191,8 +189,7 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
 
         function successLogin(res) {
             AuthenticationService.setCurrentUser(res.data);
-            //$location.path('/home');
-            alert("You logged in successfully!");
+            $location.path('/home');
         }
 
         function failed(res) {
