@@ -4,7 +4,6 @@ var app = angular.module('senior_project', ['ngRoute']);
 
 app.config(['$routeProvider', 'USER_ROLES',
     function($routeProvider, USER_ROLES) {
-
         $routeProvider.
             when('/', {
                 templateUrl: '/views/login.html',
@@ -40,45 +39,45 @@ app.run(function($location, $rootScope, $route, AuthenticationService, UserServi
             alert("You have logged out");
         }, function(res) {
           $rootScope.stopAndReport(res);
+        });
+    };
+
+    $rootScope.stopAndReport = function(res) {
+        event.preventDefault();
+        alert(res.message);
+    }
+
+    $rootScope.setRequestedPerson = function(person) {
+        window.localStorage.setItem("req_person", JSON.stringify(person));
+        $rootScope.requestedPerson = person;
+    }
+
+    $rootScope.clearRequestedPerson = function() {
+        window.localStorage.removeItem("req_stu");
+        $rootScope.requestedPerson = null;
+    }
+
+    $rootScope.$on('$locationChangeStart', function(event, next, current) {
+        var next_path = $location.path();
+        var next_route = $route.routes[next_path];
+
+        if (next_path == '/' && AuthenticationService.isAuthenticated()) {
+          event.preventDefault();
+          $location.path('/home');
+        }
+        if (next_route && next_route.require_login) {
+          if(!AuthenticationService.isAuthenticated()) {
+            $rootScope.stopAndReport({'message' : "You must be logged in first"});
+            $location.path('/');
+          }
+          else if (!AuthenticationService.isAuthorized(next_route.good_roles)) {
+            $rootScope.stopAndReport({'message' : "You are not authorized to view this page"});
+
+            next_path = '/home';
+            $location.path(next_path);
+          } else $location.path(next_path);
+        }
     });
-  };
-
-  $rootScope.stopAndReport = function(res) {
-    event.preventDefault();
-    alert(res.message);
-  }
-
-  $rootScope.setRequestedPerson = function(person) {
-    window.localStorage.setItem("req_person", JSON.stringify(person));
-    $rootScope.requestedPerson = person;
-  }
-
-  $rootScope.clearRequestedPerson = function() {
-    window.localStorage.removeItem("req_stu");
-    $rootScope.requestedPerson = null;
-  }
-
-  $rootScope.$on('$locationChangeStart', function(event, next, current) {
-    var next_path = $location.path();
-    var next_route = $route.routes[next_path];
-
-    if (next_path == '/' && AuthenticationService.isAuthenticated()) {
-      event.preventDefault();
-      $location.path('/home');
-    }
-    if (next_route && next_route.require_login) {
-      if(!AuthenticationService.isAuthenticated()) {
-        $rootScope.stopAndReport({'message' : "You must be logged in first"});
-        $location.path('/');
-      }
-      else if (!AuthenticationService.isAuthorized(next_route.good_roles)) {
-        $rootScope.stopAndReport({'message' : "You are not authorized to view this page"});
-
-        next_path = '/home';
-        $location.path(next_path);
-      } else $location.path(next_path);
-    }
-  });
 });
 
 app.constant('USER_ROLES', {
@@ -89,48 +88,48 @@ app.constant('USER_ROLES', {
 
 app.factory('UserService', ['$http', '$rootScope',
     function($http, $rootScope) {
-       var service = {};
+        var service = {};
 
-       service.GetAllUsers = GetAllUsers;
-       service.GetByUsername = GetByUsername;
-       service.AddNewUser = AddNewUser;
-       service.UpdateUser = UpdateUser;
-       service.Login = Login;
+        service.GetAllUsers = GetAllUsers;
+        service.GetByUsername = GetByUsername;
+        service.AddNewUser = AddNewUser;
+        service.UpdateUser = UpdateUser;
+        service.Login = Login;
 
-       return service;
+        return service;
 
-       function GetAllUsers() {
-           return $http.get('/users').then(handleSuccess, handleError('Error getting all users'));
-       }
+        function GetAllUsers() {
+            return $http.get('/users').then(handleSuccess, handleError('Error getting all users'));
+        }
 
-       function GetByUsername(username) {
-           return $http.get('/users/username/' + username).then(handleSuccess, handleError('Error getting user by username'));
-       }
+        function GetByUsername(username) {
+            return $http.get('/users/username/' + username).then(handleSuccess, handleError('Error getting user by username'));
+        }
 
-       function AddNewUser(user) {
-           return $http.post('/users', user).then(handleSuccess, handleError('Error creating user'));
-       }
+        function AddNewUser(user) {
+            return $http.post('/users', user).then(handleSuccess, handleError('Error creating user'));
+        }
 
-       function Login(credentials) {
-           return $http.post('/users/login', credentials).then(handleSuccess, handleError('Invalid email and/or password'));
-       }
+        function Login(credentials) {
+            return $http.post('/users/login', credentials).then(handleSuccess, handleError('Invalid email and/or password'));
+        }
 
-       function UpdateUser(user) {
-           user.last_updated_by = $rootScope.currentUser.username;
-           return $http.put('/users/' + user.username, user).then(handleSuccess, handleError('Error updating user'));
-       }
+        function UpdateUser(user) {
+            user.last_updated_by = $rootScope.currentUser.username;
+            return $http.put('/users/' + user.username, user).then(handleSuccess, handleError('Error updating user'));
+        }
 
-       // private functions
+        // private functions
 
-       function handleSuccess(res) {
-           return {"success" : true, "data" : res.data};
-       }
+        function handleSuccess(res) {
+            return {"success" : true, "data" : res.data};
+        }
 
-       function handleError(error) {
-          //return { success: false, message: error };
-           return {"success" : false, "message" : error};
-          //Promise.reject(doc).then(function(doc){}, function(doc){ return doc; });
-       }
+        function handleError(error) {
+            //return { success: false, message: error };
+            return {"success" : false, "message" : error};
+            //Promise.reject(doc).then(function(doc){}, function(doc){ return doc; });
+        }
     }
 ])
 .factory('AuthenticationService', ['$rootScope', 'UserService',
@@ -174,38 +173,11 @@ app.factory('UserService', ['$http', '$rootScope',
           return (good_roles.indexOf($rootScope.currentUser.user_role) !== -1);
         }
 
-        /*function handleSuccess(res) {
-            /*var doc = res.data.user;
-            doc.timestamp = res.data.timestamp;
-            doc.last_login = new Date(Date.parse(doc.last_login)).toLocaleString();
-
-            return { success : true, data: doc };*/
-
-            /*var doc = res.data;
-            console.log("res.data= " + res.data);
-
-            Promise.resolve(res);
-        }
-
-        function handleError(error) {
-            return { success: false, message: error };
-        }*/
-
         function handleSuccess(res) {
-            // return { success : true, data: res.data };
-           /*if (res.data.success) {
-              var doc = {"success" : true, "data" : res.data};
-              Promise.resolve(doc).then(function(doc){ return doc; }, function(doc){});
-           }*/
-
            return {"success" : true, "data" : res.data};
         }
 
         function handleError(error) {
-            //return { success: false, message: error };
-            /*var doc = {"success" : false, "message" : error};
-            Promise.reject(doc).then(function(doc){}, function(doc){ return doc; });*/
-
             return {"success" : false, "message" : error};
         }
     }
