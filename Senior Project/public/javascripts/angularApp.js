@@ -8,20 +8,18 @@ app.config(['$routeProvider', 'USER_ROLES',
             when('/', {
                 templateUrl: '/views/login.html',
                 controller: 'UserCtrl',
-                require_login: false,
-                good_roles: [USER_ROLES.judge, USER_ROLES.evt_admin, USER_ROLES.sys_admin]
+                require_login: false
             }).
             when('/register', {
                 templateUrl: '/views/registerHTML.html',
                 controller: 'UserCtrl',
-                require_login: false,
-                good_roles: [USER_ROLES.judge, USER_ROLES.evt_admin, USER_ROLES.sys_admin]
+                require_login: false
             }).
             when('/home', {
                 templateUrl: 'views/userPageHTML.html',
                 controller: 'UserCtrl',
                 require_login: true,
-                good_roles: [USER_ROLES.judge, USER_ROLES.evt_admin, USER_ROLES.sys_admin]
+                good_roles: [USER_ROLES.regular, USER_ROLES.judge, USER_ROLES.evt_admin, USER_ROLES.sys_admin]
             }).
             otherwise({
                 redirectTo: '/'
@@ -82,6 +80,7 @@ app.run(function($location, $rootScope, $route, AuthenticationService, UserServi
 });
 
 app.constant('USER_ROLES', {
+    regular: 'regular',
     judge: 'judge',
     evt_admin: 'evt_admin',
     sys_admin: 'sys_admin'
