@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset=utf-8 />
+<title>Add Judges</title>
+<link href="http://www.jqueryscript.net/css/jquerysctipttop.css" rel="stylesheet" type="text/css">
+<style>
+* {font-family: sans-serif;}
+h2 {font-size: 110%;}
+
+.error {
+  color: red;
+}
+  .button {
+  background-color: #4CAF50;
+  border: none;
+  color: white;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+  }
+
+  .minusbttn {
+  background-color: #f44336;
+  border: none;
+  color: white;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+  }
+
+  input {
+  width: 40%;
+  }
+</style>
+</head>
+<body>
+<h1 style="margin-top:150px;">Add Judges Information</h1>
+  <h2>Full Name and Email </h2>
+  <div data-duplicate="info" data-duplicate-min="0">
+      <button data-duplicate-add="info" class="button">+</button>
+    <input type="text" placeholder="full name" class="input">
+    <input type="email" placeholder="some@gmail.com" class="input">
+  </div>
+<div data-duplicate="info">
+  <button data-duplicate-remove="info" class="minusbttn">-</button>
+  <input type="text" placeholder="full name" class="input">
+  <input type="email" placeholder="some@gmail.com" class="input">
+</div>
+  <script>
+    // not needed, just an example of listening to events triggered by the plugin
+    $('body').on('duplicate.error', function(ev){
+      console.log('refused to add/remove', this);
+      $(ev.target).addClass('error');
+      setTimeout(function(){
+        $(ev.target).removeClass('error');
+      }, 1500);
+    });
+  </script>
+<button type="submit" value="Submit" class="button">Submit</button>
+
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<script src="jquery.duplicate.js"></script>
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-36251023-1']);
+  _gaq.push(['_setDomainName', 'jqueryscript.net']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+</body>
+</html>
