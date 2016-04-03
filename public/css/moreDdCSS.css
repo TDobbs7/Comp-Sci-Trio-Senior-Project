@@ -1,0 +1,12 @@
+body{
+    padding:10px;
+}
+
+.show-on-hover:hover > ul.dropdown-menu {
+    display: block;
+}
+
+.dropdown-menu {
+    min-width: 15px !important;
+    /*height: 60px !important;*/
+}
