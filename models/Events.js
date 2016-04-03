@@ -2,6 +2,7 @@ var mongoose = require('mongoose');
 var Evt_Admin = mongoose.model('Evt_Admin');
 
 var EventSchema = new mongoose.Schema({
+    evt_id: String,
     name: String,
     event_host: Evt_Admin,
     startDate: Date,

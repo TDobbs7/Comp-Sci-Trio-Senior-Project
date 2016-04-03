@@ -6,33 +6,33 @@
                     <h3 class="panel-title">Sign Up, please.</h3>
                 </div>
                 <div class="panel-body">
-                    <form role="form" ng-submit="register(user)">
+                    <form role="form" data-ng-submit="register(user)">
                         <div class="row">
                             <div class="col-xs-6 col-sm-6 col-md-6">
                                 <div class="form-group">
-                                    <input type="text" name="first_name" id="first_name" class="form-control input-sm floatlabel" placeholder="First Name" ng-model="user.fname" required>
+                                    <input type="text" name="first_name" id="first_name" class="form-control input-sm floatlabel" placeholder="First Name" data-ng-model="user.fname" required>
                                 </div>
                             </div>
                             <div class="col-xs-6 col-sm-6 col-md-6">
                                 <div class="form-group">
-                                    <input type="text" name="last_name" id="last_name" class="form-control input-sm" placeholder="Last Name" ng-model="user.lname" required>
+                                    <input type="text" name="last_name" id="last_name" class="form-control input-sm" placeholder="Last Name" data-ng-model="user.lname" required>
                                 </div>
                             </div>
                         </div>
 
                         <div class="form-group">
-                            <input type="email" name="email" id="email" class="form-control input-sm" placeholder="Email Address" ng-model="user.email" required>
+                            <input type="email" name="email" id="email" class="form-control input-sm" placeholder="Email Address" data-ng-model="user.email" required>
                         </div>
 
                         <div class="row">
                             <div class="col-xs-6 col-sm-6 col-md-6">
                                 <div class="form-group">
-                                    <input type="password" name="password" id="password" class="form-control input-sm" placeholder="Password" ng-model="user.password" required>
+                                    <input type="password" name="password" id="password" class="form-control input-sm" placeholder="Password" data-ng-model="user.password" required>
                                 </div>
                             </div>
                             <div class="col-xs-6 col-sm-6 col-md-6">
                                 <div class="form-group">
-                                    <input type="password" name="password_confirmation" id="password_confirmation" class="form-control input-sm" placeholder="Confirm Password" ng-model="user.password2" required>
+                                    <input type="password" name="password_confirmation" id="password_confirmation" class="form-control input-sm" placeholder="Confirm Password" data-ng-model="user.password2" required>
                                 </div>
                             </div>
                         </div>

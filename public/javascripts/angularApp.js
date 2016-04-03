@@ -16,8 +16,14 @@ app.config(['$routeProvider', 'USER_ROLES',
                 require_login: false
             }).
             when('/home', {
-                templateUrl: 'views/userPageHTML.html',
+                templateUrl: '/views/userPageHTML.html',
                 controller: 'UserCtrl',
+                require_login: true,
+                good_roles: [USER_ROLES.regular, USER_ROLES.judge, USER_ROLES.evt_admin, USER_ROLES.sys_admin]
+            }).
+            when('/judge/auth', {
+                templateUrl: '/views/judge_auth.html',
+                controller: 'JudgeCtrl',
                 require_login: true,
                 good_roles: [USER_ROLES.regular, USER_ROLES.judge, USER_ROLES.evt_admin, USER_ROLES.sys_admin]
             }).
@@ -207,5 +213,13 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
                     }, failed);
             }
         }
+
+        $scope.sendEmail = function() {
+            window.open
+        }
+    }
+])
+.controller('JudgeCtrl', ['$scope',
+    function($scope) {
     }
 ]);

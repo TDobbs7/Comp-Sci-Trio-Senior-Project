@@ -18,7 +18,7 @@ router.get('/:email', function(req, res, next) {
   User.findOne({"email" : req.params.email}, function(err, user) {
     if (err) return next(err);
 
-    if (!user) res.status(404).json({'success' : 'false', 'message' :"User Email" + req.params.email + " not found"});
+    if (!user) res.status(404).json({'success' : 'false', 'message' :"User with Email" + req.params.email + " not found"});
     else res.json({'success' : 'true', "user" : user, "timestamp" : new Date(new Date().getTime())});
   });
 });
@@ -64,7 +64,6 @@ router.put('/:email', function(req, res, next) {
 
     else {
         aUser._id = user._id;
-        aUser.last_update = JSON.parse(JSON.stringify({"timestamp" : new Date(new Date().getTime()).toUTCString()}));
 
         User.update({'email' : req.params.email}, aUser, {'upsert' : true}, function(err2) {
             if (err2) return next(err2);
