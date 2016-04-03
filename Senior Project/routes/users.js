@@ -9,7 +9,7 @@ router.get('/', function(req, res, next) {
   User.find(function(err, users) {
     if (err) return next(err);
 
-    if (!users) res.json({"success" : "false", "message" : "No users found"});
+    if (!users) res.status(404).json({"success" : "false", "message" : "No users found"});
     else res.json({"success" : "true", "users" :users, "timestamp" : new Date(new Date().getTime())});
   });
 });
@@ -18,7 +18,7 @@ router.get('/:email', function(req, res, next) {
   User.findOne({"email" : req.params.email}, function(err, user) {
     if (err) return next(err);
 
-    if (!user) res.json({'success' : 'false', 'message' :"User Email" + req.params.email + " not found"});
+    if (!user) res.status(404).json({'success' : 'false', 'message' :"User Email" + req.params.email + " not found"});
     else res.json({'success' : 'true', "user" : user, "timestamp" : new Date(new Date().getTime())});
   });
 });
@@ -40,10 +40,7 @@ router.post('/login', function(req, res, next) {
     User.findOne({'email' : email, 'password' : password}, function(err,user) {
         if (err) return next(err);
 
-        if (!user) {
-            console.log("Welp");
-            res.json({"success" : "false", "message" : "Invalid username and/or password"});
-        }
+        if (!user) res.status(401).json({"success" : "false", "message" : "Invalid username and/or password"});
         else {
             var doc = {
                 "name" : user.name,
@@ -63,7 +60,7 @@ router.put('/:email', function(req, res, next) {
 
   User.findOne({"email" : req.params.email}, function(err, user) {
     if (err) return next(err);
-    if (!user) res.status(500).json({"message" : "User " + req.params.email + " can't be updated at this time"});
+    if (!user) res.status(404).json({"message" : "User " + req.params.email + " can't be updated at this time"});
 
     else {
         aUser._id = user._id;

@@ -6,6 +6,6 @@ var UserSchema = new mongoose.Schema({
     password: String,
     user_role: String,
     last_login: Date
-}, {collection : 'users'});
+}, {collection : 'users', discriminatorKey: 'kind', versionKey : false});
 
 mongoose.model('User', UserSchema);

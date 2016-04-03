@@ -122,11 +122,11 @@ app.factory('UserService', ['$http', '$rootScope',
         // private functions
 
         function handleSuccess(res) {
-            return {"success" : true, "data" : res.data};
+            if (typeof res != "undefined") return {"success" : true, "data" : res.data};
         }
 
         function handleError(error) {
-            return {"success" : false, "message" : error};
+            if (typeof error != "undefined") return {"success" : false, "message" : error};
         }
     }
 ])
@@ -172,7 +172,7 @@ app.factory('UserService', ['$http', '$rootScope',
         }
 
         function handleSuccess(res) {
-            if (res.success) return {"success" : true, "data" : res.data};
+            return {"success" : true, "data" : res.data};
         }
 
         function handleError(error) {
