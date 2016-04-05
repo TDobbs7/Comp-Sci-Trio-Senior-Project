@@ -41,19 +41,19 @@ h2 {font-size: 110%;}
   width: 40%;
   }
 </style>
+  <h1>Add Judges Information</h1>
 </head>
 <body>
-<h1 style="margin-top:150px;">Add Judges Information</h1>
-  <h2>Full Name and Email </h2>
+  <h2>Full Name and Email of Judges </h2>
   <div data-duplicate="info" data-duplicate-min="0">
       <button data-duplicate-add="info" class="button">+</button>
-    <input type="text" placeholder="full name" class="input">
-    <input type="email" placeholder="some@gmail.com" class="input">
+    <input type="text" placeholder="full name" id="name" class="input">
+    <input type="email" placeholder="some@gmail.com" id="" class="input">
   </div>
 <div data-duplicate="info">
   <button data-duplicate-remove="info" class="minusbttn">-</button>
-  <input type="text" placeholder="full name" class="input">
-  <input type="email" placeholder="some@gmail.com" class="input">
+  <input type="text" placeholder="full name" id="name" class="input">
+  <input type="email" placeholder="youremail@youremail.com" id="email" class="input">
 </div>
   <script>
     // not needed, just an example of listening to events triggered by the plugin
@@ -65,7 +65,12 @@ h2 {font-size: 110%;}
       }, 1500);
     });
   </script>
-<button type="submit" value="Submit" class="button">Submit</button>
+  <form method="post" action="mailto:youremail@youremail.com" >
+    <input type="hidden" name="message" value="I am writing to invite you to act as a judge at a debate we are organising at XXXX School, I hope that
+you are able to join us. ">
+    <button type="submit" value="Send Email" class="button">Submit</button>
+  </form>
+
 
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
 <script src="jquery.duplicate.js"></script>
