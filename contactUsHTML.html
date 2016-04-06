@@ -1,5 +1,37 @@
+<?php
+if(isset($_POST["submit"])){
+// Checking For Blank Fields..
+if($_POST["vname"]==""||$_POST["vemail"]==""||$_POST["vsubject"]==""||$_POST["vmessage"]==""){
+echo "Fill All Fields..";
+}else{
+// Check if the "Sender's Email" input field is filled out
+$email=$_POST['vemail'];
+// Sanitize E-mail Address
+$email =filter_var($email, FILTER_SANITIZE_EMAIL);
+// Validate E-mail Address
+$email= filter_var($email, FILTER_VALIDATE_EMAIL);
+if (!$email){
+echo "Invalid Sender's Email";
+}
+else{
+$subject = $_POST['vsubject'];
+$message = $_POST['vmessage'];
+$headers = 'From:'. $email2 . "\r\n"; // Sender's Email
+$headers .= 'Cc:'. $email2 . "\r\n"; // Carbon copy to Sender
+// Message lines should not exceed 70 characters (PHP rule), so wrap it
+$message = wordwrap($message, 70);
+$submit = $_POST;
+// Send Mail By PHP Mail Function
+mail("brsimmon@aggies.ncat.edu", $subject, $message, $headers);
+echo "Your mail has been sent successfuly ! Thank you for your feedback";
+}
+}
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Contact Us</title>
@@ -7,14 +39,19 @@
     <link href="public/css/bootstrap.min.css" rel="stylesheet">
     <LINK REL=StyleSheet HREF="public/css/contactUsCSS.css" TYPE="text/css">
 </head>
+
 <body>
+<!--<h3><?php include "secure_email_code.php"?></h3>-->
+<div id="form_sample"></div>
+<!--<script src="contactUsJS.js"></script>-->
+
 <div class="container">
     <div class="row centered-form">
         <div class="col-xs-12 col-sm-8 col-md-7 col-sm-offset-2 col-md-offset-4 media">
             <div class="panel panel-default">
                 <div class="panel-heading">
                     <br>
-                    <h3 class="panel-title">Contact Us.</h3>
+                    <h3 class="panel-title">Contact Us</h3>
                     <hr class="colorgraph colorgraph-footer">
                 </div>
                 <div class="panel-body">
@@ -35,23 +72,23 @@
                             <div class="row">
                                 <div class="col-md-6 col-sm-12">
                                     <div class="form-group">
-                                        <label for="name">Name</label>
-                                        <input type="text" class="form-control" id="name" placeholder="Enter name" required="required" />
+                                        <label for="vname">Name</label>
+                                        <input type="text" class="form-control" id="vname" placeholder="Enter name" required="required" />
                                     </div>
 
                                     <div class="form-group">
-                                        <label for="email">Email Address</label>
+                                        <label for="vemail">Email Address</label>
                                         <div class="input-group">
                                             <span class="input-group-addon">
                                                 <span class="glyphicon glyphicon-envelope"></span>
                                             </span>
-                                            <input type="email" class="form-control" id="email" placeholder="Enter email" required="required" />
+                                            <input type="email" class="form-control" id="vemail" placeholder="Enter email" required="required" />
                                         </div>
                                     </div>
 
                                     <div class="form-group">
-                                        <label for="subject">Subject</label>
-                                        <select id="subject" name="subject" class="form-control" required="required">
+                                        <label for="vsubject">Subject</label>
+                                        <select id="vsubject" name="subject" class="form-control" required="required">
                                             <option value="na" selected="">Choose One:</option>
                                             <option value="service">Help</option>
                                             <option value="suggestions">Suggestions</option>
@@ -62,8 +99,8 @@
 
                                 <div class="col-md-6 col-sm-12">
                                     <div class="form-group">
-                                        <label for="name">Message <span class="glyphicon glyphicon-comment"></span></label>
-                                        <textarea name="message" id="message" class="form-control" rows="9" cols="25" required="required"placeholder="Comments"></textarea>
+                                        <label for="vmessage">Message <span class="glyphicon glyphicon-comment"></span></label>
+                                        <textarea name="message" id="vmessage" class="form-control" rows="9" cols="25" required="required"placeholder="Comments"></textarea>
                                     </div>
 
                                     <div class="form-group">
