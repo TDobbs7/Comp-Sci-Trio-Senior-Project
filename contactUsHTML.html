@@ -1,130 +1,47 @@
-<?php
-if(isset($_POST["submit"])){
-// Checking For Blank Fields..
-if($_POST["vname"]==""||$_POST["vemail"]==""||$_POST["vsubject"]==""||$_POST["vmessage"]==""){
-echo "Fill All Fields..";
-}else{
-// Check if the "Sender's Email" input field is filled out
-$email=$_POST['vemail'];
-// Sanitize E-mail Address
-$email =filter_var($email, FILTER_SANITIZE_EMAIL);
-// Validate E-mail Address
-$email= filter_var($email, FILTER_VALIDATE_EMAIL);
-if (!$email){
-echo "Invalid Sender's Email";
-}
-else{
-$subject = $_POST['vsubject'];
-$message = $_POST['vmessage'];
-$headers = 'From:'. $email2 . "\r\n"; // Sender's Email
-$headers .= 'Cc:'. $email2 . "\r\n"; // Carbon copy to Sender
-// Message lines should not exceed 70 characters (PHP rule), so wrap it
-$message = wordwrap($message, 70);
-$submit = $_POST;
-// Send Mail By PHP Mail Function
-mail("brsimmon@aggies.ncat.edu", $subject, $message, $headers);
-echo "Your mail has been sent successfuly ! Thank you for your feedback";
-}
-}
-}
-?>
-
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Contact Us</title>
+    <link rel="shortcut icon" type="image/jpg" href="Logo-94.jpg" />
     <link href="public/css/bootstrap-theme.min.css" rel="stylesheet">
     <link href="public/css/bootstrap.min.css" rel="stylesheet">
     <LINK REL=StyleSheet HREF="public/css/contactUsCSS.css" TYPE="text/css">
+    <?php include "sendEmail.php"?>
 </head>
 
 <body>
-<!--<h3><?php include "secure_email_code.php"?></h3>-->
-<div id="form_sample"></div>
-<!--<script src="contactUsJS.js"></script>-->
-
-<div class="container">
-    <div class="row centered-form">
-        <div class="col-xs-12 col-sm-8 col-md-7 col-sm-offset-2 col-md-offset-4 media">
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    <br>
-                    <h3 class="panel-title">Contact Us</h3>
-                    <hr class="colorgraph colorgraph-footer">
-                </div>
-                <div class="panel-body">
-                    <form role="form">
-
-<div class="container">
-    <div class="row">
-        <div class="col-sm-4 col-lg-4">
-
-            <div class="container">
-
-                <div class="row">
-                    <div class="col-md-6 col-sm-12">
-
-                        <form>
-                            <h5><strong>Send A Message </strong></h5>
-                            <!--<hr class="colorgraph colorgraph">--><hr>
-                            <div class="row">
-                                <div class="col-md-6 col-sm-12">
-                                    <div class="form-group">
-                                        <label for="vname">Name</label>
-                                        <input type="text" class="form-control" id="vname" placeholder="Enter name" required="required" />
-                                    </div>
-
-                                    <div class="form-group">
-                                        <label for="vemail">Email Address</label>
-                                        <div class="input-group">
-                                            <span class="input-group-addon">
-                                                <span class="glyphicon glyphicon-envelope"></span>
-                                            </span>
-                                            <input type="email" class="form-control" id="vemail" placeholder="Enter email" required="required" />
-                                        </div>
-                                    </div>
-
-                                    <div class="form-group">
-                                        <label for="vsubject">Subject</label>
-                                        <select id="vsubject" name="subject" class="form-control" required="required">
-                                            <option value="na" selected="">Choose One:</option>
-                                            <option value="service">Help</option>
-                                            <option value="suggestions">Suggestions</option>
-                                            <option value="product">Other</option>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <div class="col-md-6 col-sm-12">
-                                    <div class="form-group">
-                                        <label for="vmessage">Message <span class="glyphicon glyphicon-comment"></span></label>
-                                        <textarea name="message" id="vmessage" class="form-control" rows="9" cols="25" required="required"placeholder="Comments"></textarea>
-                                    </div>
-
-                                    <div class="form-group">
-                                        <button type="submit" class="btn btn-primary" id="btnContactUs">Send</button>
-                                    </div>
-                                </div>
-
-                            </div>
-                        </form>
-
-                    </div>
-
-                </div>
-            </div>
+<div class="contactform">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title"><a href="">Contact Form</a></h3>
+        </div>
+        <div class="panel-body">
+            <form name="form1" id="form1" action="" method="post">
+                <fieldset>
+                    <input type="text" class="form-control" name="fullname" placeholder="Full Name" />
+                    <br />
+                    <input type="text" class="form-control" name="subject" placeholder="Subject" />
+                    <br />
+                    <input type="email" class="form-control" name="emailid" placeholder="Email" />
+                    <br />
+                    <textarea rows="4" class="form-control" cols="20" name="comments" placeholder="Comments"></textarea>
+                    <br />
+                    <input type="submit" class="btn btn-success"name="submit" value="Send Message" />
+                </fieldset>
+            </form>
+            <p><?php if(!empty($message)) echo $message; ?></p>
         </div>
     </div>
 </div>
 
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<!-- Include all compiled plugins (below), or include individual files as needed -->
+<script src="bootstrap.min.js"></script>
 
 </body>
 </html>
