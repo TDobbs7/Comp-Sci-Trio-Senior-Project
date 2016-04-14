@@ -27,12 +27,17 @@ app.config(['$routeProvider', 'USER_ROLES',
                 require_login: true,
                 good_roles: [USER_ROLES.regular, USER_ROLES.judge, USER_ROLES.evt_admin, USER_ROLES.sys_admin]
             }).
+            when('/addEvent', {
+                templateUrl: '/views/event_page.html',
+                controller: 'EventCtrl',
+                require_login: true,
+                good_roles: [USER_ROLES.evt_admin, USER_ROLES.sys_admin]
+            }).
             otherwise({
                 redirectTo: '/'
             });
     }
 ]);
-
 
 app.run(function($location, $rootScope, $route, AuthenticationService, UserService) {
     $rootScope.location = $location;
@@ -135,6 +140,11 @@ app.factory('UserService', ['$http', '$rootScope',
         }
     }
 ])
+.factory('EventService', ['$http', '$rootScope',
+    function($http, $rootScope) {
+
+    }
+])
 .factory('AuthenticationService', ['$rootScope', 'UserService',
     function($rootScope, UserService) {
         var service = {};
@@ -184,10 +194,31 @@ app.factory('UserService', ['$http', '$rootScope',
             return {"success" : false, "message" : error};
         }
     }
+])
+.factory('EmailService', ['$http',
+    function($http){
+        var service = {};
+
+        service.sendEmail = sendEmail;
+
+        return service;
+
+        function sendEmail(data) {
+            return $http.post('/email', data).then(handleSuccess, handleError("Error sending email"));
+        }
+
+        function handleSuccess(res) {
+            return {"success" : true, "data" : res.data};
+        }
+
+        function handleError(error) {
+            return {"success" : false, "message" : error};
+        }
+    }
 ]);
 
-app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', 'AuthenticationService', 'UserService',
-    function($scope, $rootScope, $location, USER_ROLES, AuthenticationService, UserService) {
+app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', 'AuthenticationService', 'UserService', 'EmailService',
+    function($scope, $rootScope, $location, USER_ROLES, AuthenticationService, UserService, EmailService) {
         $scope.login = function(email, password) {
             AuthenticationService.Login(email, password).then(successLogin, failed);
         };
@@ -215,11 +246,34 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
         }
 
         $scope.sendEmail = function() {
-            window.open
+            var data = {
+                'email' : {
+                    from : 'contactus.scored@gmail.com',
+                    to: 'tdobbs7@gmail.com',
+                    subject: 'You know what\'s up',
+                    text: 'Test Test Test'
+                }
+            }
+
+            EmailService.sendEmail(data).then(
+                function(res) {
+                    alert("Email sent successfully to " + email.to + " at " + res.data.timestamp);
+                    $location.path('/home');
+                }, failed
+            );
         }
     }
 ])
 .controller('JudgeCtrl', ['$scope',
     function($scope) {
+    }
+])
+.controller('EventCtrl', ['$scope',
+    function($scope) {
+        $scope.event = {};
+
+        $scope.addOrEditEvent = function(event) {
+
+        }
     }
 ]);
