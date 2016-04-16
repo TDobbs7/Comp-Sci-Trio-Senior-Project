@@ -78,3 +78,7 @@ label.label-floatlabel {
     color: blueviolet;
     font-size: 11px;
 }
+
+label {
+    font-size: 16px; font-family: "Times New Roman";
+}
