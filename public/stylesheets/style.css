@@ -7,6 +7,14 @@ a {
   color: #00B7FF;
 }
 
+.line {
+  display: inline;
+}
+
+.right {
+  float: right;
+}
+
 textarea {
   width: 100%;
   resize: none;

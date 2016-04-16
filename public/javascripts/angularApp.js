@@ -22,7 +22,7 @@ app.config(['$routeProvider', 'USER_ROLES',
                 good_roles: [USER_ROLES.regular, USER_ROLES.judge, USER_ROLES.evt_admin, USER_ROLES.sys_admin]
             }).
             when('/judge/auth', {
-                templateUrl: '/views/judge_auth.html',
+                templateUrl: '/views/judgeEventHTML.html',
                 controller: 'JudgeCtrl',
                 require_login: true,
                 good_roles: [USER_ROLES.regular, USER_ROLES.judge, USER_ROLES.evt_admin, USER_ROLES.sys_admin]
@@ -132,17 +132,34 @@ app.factory('UserService', ['$http', '$rootScope',
         // private functions
 
         function handleSuccess(res) {
-            if (typeof res != "undefined") return {"success" : true, "data" : res.data};
+            return {"success" : true, "data" : res.data};
         }
 
         function handleError(error) {
-            if (typeof error != "undefined") return {"success" : false, "message" : error};
+            return {"success" : false, "message" : error};
         }
     }
 ])
 .factory('EventService', ['$http', '$rootScope',
     function($http, $rootScope) {
+        var service = {};
 
+        service.addEvent = addEvent;
+        service.editEvent = editEvent;
+
+        return service;
+
+        function addEvent(event) {
+            return $http.post('/events', event).then(handleSuccess, handleError("Error adding event"));
+        }
+
+        function editEvent(event) {
+            return $http.put('/events/' + event.evt_id, event).then(handleSuccess, handleError("Error updating email"));
+        }
+
+        function verifyEventCode(code) {
+            return $http.post('/events/verify', code).then(handleSuccess, handleError("Invalid event code"));
+        }
     }
 ])
 .factory('AuthenticationService', ['$rootScope', 'UserService',
@@ -264,8 +281,11 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
         }
     }
 ])
-.controller('JudgeCtrl', ['$scope',
-    function($scope) {
+.controller('JudgeCtrl', ['$scope', 'EventService',
+    function($scope, EventService) {
+        $scope.verifyEventCode = function(code) {
+            EventService.
+        }
     }
 ])
 .controller('EventCtrl', ['$scope',
