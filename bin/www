@@ -25,7 +25,7 @@ app.set('port', port);
 var options = {
     key: fs.readFileSync(__dirname + '/../options/CST_Key.key'),
     cert: fs.readFileSync(__dirname + '/../options/CST_Cert.crt'),
-    passphrase: 'compscitrio123'
+    passphrase: 'CSTTony7'
 };
 
 var server = https.createServer(options, app);
