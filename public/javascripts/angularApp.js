@@ -22,17 +22,22 @@ app.config(['$routeProvider', 'USER_ROLES',
                 good_roles: [USER_ROLES.regular, USER_ROLES.judge, USER_ROLES.evt_admin, USER_ROLES.sys_admin]
             }).
             when('/judge/auth', {
-                templateUrl: '/views/judge_auth.html',
+                templateUrl: '/views/judgeEventHTML.html',
                 controller: 'JudgeCtrl',
                 require_login: true,
                 good_roles: [USER_ROLES.regular, USER_ROLES.judge, USER_ROLES.evt_admin, USER_ROLES.sys_admin]
+            }).
+            when('/addEvent', {
+                templateUrl: '/views/event_page.html',
+                controller: 'EventCtrl',
+                require_login: true,
+                good_roles: [USER_ROLES.evt_admin, USER_ROLES.sys_admin]
             }).
             otherwise({
                 redirectTo: '/'
             });
     }
 ]);
-
 
 app.run(function($location, $rootScope, $route, AuthenticationService, UserService) {
     $rootScope.location = $location;
@@ -127,11 +132,45 @@ app.factory('UserService', ['$http', '$rootScope',
         // private functions
 
         function handleSuccess(res) {
-            if (typeof res != "undefined") return {"success" : true, "data" : res.data};
+            return {"success" : true, "data" : res.data};
         }
 
         function handleError(error) {
-            if (typeof error != "undefined") return {"success" : false, "message" : error};
+            return {"success" : false, "message" : error};
+        }
+    }
+])
+.factory('EventService', ['$http', '$rootScope',
+    function($http, $rootScope) {
+        var service = {};
+
+        service.addEvent = addEvent;
+        service.editEvent = editEvent;
+
+        return service;
+
+        function addEvent(event) {
+            return $http.post('/events', event).then(handleSuccess, handleError("Error adding event"));
+        }
+
+        function editEvent(event) {
+            return $http.put('/events/' + event.evt_id, event).then(handleSuccess, handleError("Error updating email"));
+        }
+
+        function removeEvent(event) {
+            return $http.delete('/events/' + event.evt_id, event).then(handleSuccess, handleError("Error deleting email"));
+        }
+
+        function verifyEventCode(code) {
+            return $http.post('/events/verify', code).then(handleSuccess, handleError("Invalid event code"));
+        }
+
+        function handleSuccess(res) {
+            return {"success" : true, "data" : res.data};
+        }
+
+        function handleError(error) {
+            return {"success" : false, "message" : error};
         }
     }
 ])
@@ -184,10 +223,31 @@ app.factory('UserService', ['$http', '$rootScope',
             return {"success" : false, "message" : error};
         }
     }
+])
+.factory('EmailService', ['$http',
+    function($http){
+        var service = {};
+
+        service.sendEmail = sendEmail;
+
+        return service;
+
+        function sendEmail(data) {
+            return $http.post('/email', data).then(handleSuccess, handleError("Error sending email"));
+        }
+
+        function handleSuccess(res) {
+            return {"success" : true, "data" : res.data};
+        }
+
+        function handleError(error) {
+            return {"success" : false, "message" : error};
+        }
+    }
 ]);
 
-app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', 'AuthenticationService', 'UserService',
-    function($scope, $rootScope, $location, USER_ROLES, AuthenticationService, UserService) {
+app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', 'AuthenticationService', 'UserService', 'EmailService',
+    function($scope, $rootScope, $location, USER_ROLES, AuthenticationService, UserService, EmailService) {
         $scope.login = function(email, password) {
             AuthenticationService.Login(email, password).then(successLogin, failed);
         };
@@ -215,11 +275,85 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
         }
 
         $scope.sendEmail = function() {
-            window.open
+            var data = {
+                'email' : {
+                    from : 'contactus.scored@gmail.com',
+                    to: 'tdobbs7@gmail.com',
+                    subject: 'You know what\'s up',
+                    text: 'Test Test Test'
+                }
+            }
+
+            EmailService.sendEmail(data).then(
+                function(res) {
+                    alert("Email sent successfully to " + email.to + " at " + res.data.timestamp);
+                    $location.path('/home');
+                }, failed
+            );
         }
     }
 ])
-.controller('JudgeCtrl', ['$scope',
-    function($scope) {
+.controller('JudgeCtrl', ['$scope', 'EventService',
+    function($scope, EventService) {
+        $scope.verifyEventCode = function(code) {
+            //EventService.
+        }
+    }
+])
+.controller('EventCtrl', ['$scope', '$rootScope', '$compile', '$location', 'EventService',
+    function($scope, $rootScope, $compile, $location, EventService) {
+        $scope.event = {};
+        $scope.number_of_judges = 1;
+
+        $scope.addEvent = function(event) {
+            event.judges = [];
+
+            event.evt_id = 'EVT-' + Math.random().toString(36).substring(2, 9);
+            event.event_host = $rootScope.currentUserData.name;
+
+            var judgesHTML = $('#judges')[0].children;
+
+            for (var i = 0; i < judgesHTML.length; i++) {
+                var judge = {};
+
+                judge.name = judgesHTML[i].children.name.value;
+                judge.email = judgesHTML[i].children.email.value;
+
+                event.judges.push(judge);
+            }
+
+            EventService.addEvent(event).then(function(res) {
+                alert('Your event was added at ' + res.data.timestamp);
+                $location.path('/home');
+            }, function(res){
+                $rootScope.stopAndReport(res);
+            });
+        }
+
+        $scope.addJudge = function(evt) {
+            evt.preventDefault();
+
+            $scope.number_of_judges++;
+
+            var el = document.createElement('div');
+            var divIDName = 'judge-' + $scope.number_of_judges;
+            el.setAttribute('id', divIDName);
+            el.setAttribute('class', 'form-group');
+            el.innerHTML = '<button data-ng-click="removeJudge($event,' + $scope.number_of_judges + ');" class="btn btn-info">-</button> <input type="text" placeholder="full name" name="name" class="input" required> <input type="email" placeholder="youremail@email.com" name="email" class="input" required>';
+
+            var temp = $compile(el)($scope);
+            angular.element(document.querySelector('#judges')).append(temp);
+        }
+
+        $scope.removeJudge = function(evt, num) {
+            evt.preventDefault();
+
+            $scope.number_of_judges--;
+
+            var j = document.getElementById('judges');
+            var delDiv = document.getElementById('judge-' + num);
+            j.removeChild(delDiv);
+
+        }
     }
 ]);
