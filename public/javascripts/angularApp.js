@@ -33,6 +33,18 @@ app.config(['$routeProvider', 'USER_ROLES',
                 require_login: true,
                 good_roles: [USER_ROLES.evt_admin, USER_ROLES.sys_admin]
             }).
+            when('/contact_us', {
+                templateUrl: '/views/contactUsHTML.html',
+                controller: 'UserCtrl',
+                require_login: true,
+                good_roles: [USER_ROLES.regular, USER_ROLES.judge, USER_ROLES.evt_admin, USER_ROLES.sys_admin]
+            }).
+            when('/about_us', {
+                templateUrl: '/views/aboutUsHTML.html',
+                controller: 'UserCtrl',
+                require_login: true,
+                good_roles: [USER_ROLES.regular, USER_ROLES.judge, USER_ROLES.evt_admin, USER_ROLES.sys_admin]
+            }).
             otherwise({
                 redirectTo: '/'
             });
@@ -146,6 +158,8 @@ app.factory('UserService', ['$http', '$rootScope',
 
         service.addEvent = addEvent;
         service.editEvent = editEvent;
+        service.removeEvent = removeEvent;
+        service.verifyEventCode = verifyEventCode;
 
         return service;
 
@@ -274,22 +288,23 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
             }
         }
 
-        $scope.sendEmail = function() {
+        $scope.sendEmail = function(email_recipients, email_subject, message) {
             var data = {
                 'email' : {
                     from : 'contactus.scored@gmail.com',
-                    to: 'tdobbs7@gmail.com',
-                    subject: 'You know what\'s up',
-                    text: 'Test Test Test'
+                    recipients: email_recipients,
+                    subject: email_subject,
+                    text: message
                 }
-            }
+            };
 
             EmailService.sendEmail(data).then(
                 function(res) {
-                    alert("Email sent successfully to " + email.to + " at " + res.data.timestamp);
-                    $location.path('/home');
+                    //alert("Email sent successfully to " + data.email.to + " at " + res.data.timestamp);
+                    //$location.path('/home');
                 }, failed
             );
+
         }
     }
 ])
@@ -309,7 +324,7 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
             event.judges = [];
 
             event.evt_id = 'EVT-' + Math.random().toString(36).substring(2, 9);
-            event.event_host = $rootScope.currentUserData.name;
+            event.event_host = $rootScope.currentUserData.user.name;
 
             var judgesHTML = $('#judges')[0].children;
 
@@ -353,7 +368,6 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
             var j = document.getElementById('judges');
             var delDiv = document.getElementById('judge-' + num);
             j.removeChild(delDiv);
-
         }
     }
 ]);
