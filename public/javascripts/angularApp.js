@@ -322,8 +322,8 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
         }
     }
 ])
-.controller('EventCtrl', ['$scope', '$rootScope', '$compile', '$location', 'EventService',
-    function($scope, $rootScope, $compile, $location, EventService) {
+.controller('EventCtrl', ['$scope', '$rootScope', '$compile', '$location', 'EventService', 'EmailService',
+    function($scope, $rootScope, $compile, $location, EventService, EmailService) {
         $scope.event = {};
         $scope.number_of_judges = 1;
 
@@ -345,11 +345,31 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
             }
 
             EventService.addEvent(event).then(function(res) {
+                $scope.sendEmail(judges, "Judging!", "Test Test Test");
                 alert('Your event was added at ' + res.data.timestamp);
                 $location.path('/home');
             }, function(res){
                 $rootScope.stopAndReport(res);
             });
+        }
+
+        $scope.sendEmail = function(email_recipients, email_subject, message) {
+            var data = {
+                'email' : {
+                    from : 'contactus.scored@gmail.com',
+                    recipients: email_recipients,
+                    subject: email_subject,
+                    text: message
+                }
+            };
+
+            EmailService.sendEmail(data).then(
+                function(res) {
+                    //alert("Email sent successfully to " + data.email.to + " at " + res.data.timestamp);
+                    //$location.path('/home');
+                }, function(res) { failed(res); }
+            );
+
         }
 
         $scope.addJudge = function(evt) {
@@ -376,5 +396,9 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
             var delDiv = document.getElementById('judge-' + num);
             j.removeChild(delDiv);
         }
+
+        function failed(res) {
+                    $rootScope.stopAndReport(res.data);
+                }
     }
 ]);
