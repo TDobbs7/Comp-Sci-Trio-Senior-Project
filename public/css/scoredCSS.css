@@ -18,6 +18,13 @@
     }
 }
 
+.navbar-middle {
+    margin-left: 465px;
+}
+.navbar-right  {
+    float: right;
+}
+
 body{
     /* Safari 4-5, Chrome 1-9 */
     /*background: -webkit-gradient(radial, center center, 0, center center, 460, from(#1a82f7), to(#2F2727));*/
@@ -68,6 +75,7 @@ body{
     margin-top: 60px;
 }
 
+
 .centered-form .panel{
     background: rgba(255, 255, 255, 0.8);
     box-shadow: rgba(0, 0, 0, 0.3) 20px 20px 20px;
@@ -82,3 +90,11 @@ label.label-floatlabel {
 label {
     font-size: 16px; font-family: "Times New Roman";
 }
+
+.end {
+    font-family: Candara, Calibri, Segoe, "Segoe UI", Optima, Arial, sans-serif;
+}
+#front {
+    font-family: "Lucida Bright", Georgia, serif;
+}
+

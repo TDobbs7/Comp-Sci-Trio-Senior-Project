@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <link rel="shortcut icon" type="image/jpg" href="Logo-94.jpg" />
+    <link rel="shortcut icon" type="image/jpg" href="public/images/Logo-94.jpg" />
     <title>Next, Judge Event</title>
     <link href="public/css/bootstrap-theme.min.css" rel="stylesheet">
     <link href="public/css/bootstrap.min.css" rel="stylesheet">
-    <LINK REL=StyleSheet HREF="public/css/judgeEventCSS.css" TYPE="text/css">
+    <LINK REL=StyleSheet HREF="public/css/scoredCSS.css" TYPE="text/css">
  <!--   <script type="text/javascript" src="registerJS.js"></script> -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
     <script src="bootstrap.min.js"></script>
@@ -31,8 +31,28 @@
                         </div>
 
                         <div class="form-group center-block">
-                          <input type="submit" value="Enter" class="btn btn-info btn-md">
-                        <!--    <button type="submit" class="btn btn-info btn-md center-block">Enter</button> -->
+
+                            <script>
+
+                                //Make Array or ArrayList of passwords that can be used.
+
+                                function passWord() {
+                                    var pass1 = document.getElementById("password").value;
+                                    //Password should be in the list of allowed passwords from an Array or ArrayList
+                                        if (pass1.toLowerCase() == "cst") {
+                                            open('http://localhost:63342/Comp-Sci-Trio-Senior-Project/eventPageHTML.html');
+                                        }  else {
+
+                                            //invalid pswd response
+
+                                        }
+                                }
+                            </script>
+
+                                <FORM>
+                                    <input type="submit" value="Enter" class="btn btn-info btn-md" onclick="passWord()">
+                                </FORM>
+
                         </div>
                     </form>
 
