@@ -284,15 +284,45 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
 .controller('JudgeCtrl', ['$scope', 'EventService',
     function($scope, EventService) {
         $scope.verifyEventCode = function(code) {
-            EventService.
+            //EventService.
         }
     }
 ])
-.controller('EventCtrl', ['$scope',
-    function($scope) {
+.controller('EventCtrl', ['$scope', '$compile',
+    function($scope, $compile) {
         $scope.event = {};
-
+        $scope.number_of_judges = 1;
         $scope.addOrEditEvent = function(event) {
+
+        }
+
+        $scope.addJudge = function(evt) {
+            evt.preventDefault();
+
+            /*var el = '<div id="judge-"' + $scope.number_of_judges + '" class="form-group"> <button data-ng-click="removeJudge($event);" class="btn btn-info">-</button> <input type="text" placeholder="full name" name="fname2" class="input"> <input type="email" placeholder="youremail@email.com" name="email2" class="input"> </div>';
+            var temp = $compile(el)($scope);
+            angular.element(document.querySelector('.judges')).append(temp);*/
+
+            $scope.number_of_judges++;
+
+            var el = document.createElement('div');
+            var divIDName = 'judge-' + $scope.number_of_judges;
+            el.setAttribute('id', divIDName);
+            el.setAttribute('class', 'form-group');
+            el.innerHTML = '<button data-ng-click="removeJudge($event,' + $scope.number_of_judges + ');" class="btn btn-info">-</button> <input type="text" placeholder="full name" name="fname2" class="input"> <input type="email" placeholder="youremail@email.com" name="email2" class="input">';
+
+            var temp = $compile(el)($scope);
+            angular.element(document.querySelector('#judges')).append(temp);
+        }
+
+        $scope.removeJudge = function(evt, num) {
+            evt.preventDefault();
+
+            $scope.number_of_judges--;
+
+            var j = document.getElementById('judges');
+            var delDiv = document.getElementById('judge-' + num);
+            j.removeChild(delDiv);
 
         }
     }
