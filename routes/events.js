@@ -9,8 +9,8 @@ router.get('/', function(req, res, next) {
   Event.find(function(err, events) {
     if (err) return next(err);
 
-    if (!events) res.status(404).json({"success" : "false", "message" : "No events found"});
-    else res.json({"success" : "true", "events" : events, "timestamp" : new Date(new Date().getTime())});
+    if (!events) res.status(404).json({"message" : "No events found"});
+    else res.json({"events" : events, "timestamp" : new Date(new Date().getTime()).toLocaleString()});
   });
 });
 
@@ -20,7 +20,7 @@ router.post('/', function(req, res, next) {
   event.save(function(err) {
     if (err) return next(err);
 
-    res.send(JSON.parse(JSON.stringify({"success" : " true", "timestamp" : new Date(new Date().getTime()).toUTCString()})));
+    res.send({"timestamp" : new Date(new Date().getTime()).toLocaleString()});
   });
 });
 
@@ -45,9 +45,9 @@ router.post('/verify', function(req, res, next) {
         }
     });*/
 
-    var code = req.body.code;
+    //var code = req.body.code;
 
-    Event.findOne({'evt_code'})
+    //Event.findOne({'evt_code'})
 });
 
 router.put('/:email', function(req, res, next) {

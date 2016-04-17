@@ -157,8 +157,20 @@ app.factory('UserService', ['$http', '$rootScope',
             return $http.put('/events/' + event.evt_id, event).then(handleSuccess, handleError("Error updating email"));
         }
 
+        function removeEvent(event) {
+            return $http.delete('/events/' + event.evt_id, event).then(handleSuccess, handleError("Error deleting email"));
+        }
+
         function verifyEventCode(code) {
             return $http.post('/events/verify', code).then(handleSuccess, handleError("Invalid event code"));
+        }
+
+        function handleSuccess(res) {
+            return {"success" : true, "data" : res.data};
+        }
+
+        function handleError(error) {
+            return {"success" : false, "message" : error};
         }
     }
 ])
@@ -288,20 +300,38 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
         }
     }
 ])
-.controller('EventCtrl', ['$scope', '$compile',
-    function($scope, $compile) {
+.controller('EventCtrl', ['$scope', '$rootScope', '$compile', '$location', 'EventService',
+    function($scope, $rootScope, $compile, $location, EventService) {
         $scope.event = {};
         $scope.number_of_judges = 1;
-        $scope.addOrEditEvent = function(event) {
 
+        $scope.addEvent = function(event) {
+            event.judges = [];
+
+            event.evt_id = 'EVT-' + Math.random().toString(36).substring(2, 9);
+            event.event_host = $rootScope.currentUserData.name;
+
+            var judgesHTML = $('#judges')[0].children;
+
+            for (var i = 0; i < judgesHTML.length; i++) {
+                var judge = {};
+
+                judge.name = judgesHTML[i].children.name.value;
+                judge.email = judgesHTML[i].children.email.value;
+
+                event.judges.push(judge);
+            }
+
+            EventService.addEvent(event).then(function(res) {
+                alert('Your event was added at ' + res.data.timestamp);
+                $location.path('/home');
+            }, function(res){
+                $rootScope.stopAndReport(res);
+            });
         }
 
         $scope.addJudge = function(evt) {
             evt.preventDefault();
-
-            /*var el = '<div id="judge-"' + $scope.number_of_judges + '" class="form-group"> <button data-ng-click="removeJudge($event);" class="btn btn-info">-</button> <input type="text" placeholder="full name" name="fname2" class="input"> <input type="email" placeholder="youremail@email.com" name="email2" class="input"> </div>';
-            var temp = $compile(el)($scope);
-            angular.element(document.querySelector('.judges')).append(temp);*/
 
             $scope.number_of_judges++;
 
@@ -309,7 +339,7 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
             var divIDName = 'judge-' + $scope.number_of_judges;
             el.setAttribute('id', divIDName);
             el.setAttribute('class', 'form-group');
-            el.innerHTML = '<button data-ng-click="removeJudge($event,' + $scope.number_of_judges + ');" class="btn btn-info">-</button> <input type="text" placeholder="full name" name="fname2" class="input"> <input type="email" placeholder="youremail@email.com" name="email2" class="input">';
+            el.innerHTML = '<button data-ng-click="removeJudge($event,' + $scope.number_of_judges + ');" class="btn btn-info">-</button> <input type="text" placeholder="full name" name="name" class="input" required> <input type="email" placeholder="youremail@email.com" name="email" class="input" required>';
 
             var temp = $compile(el)($scope);
             angular.element(document.querySelector('#judges')).append(temp);
