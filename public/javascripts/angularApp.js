@@ -1,6 +1,6 @@
 "use strict";
 
-var app = angular.module('senior_project', ['ngRoute']);
+var app = angular.module('senior_project', ['ngRoute', 'angularCSS']);
 
 app.config(['$routeProvider', 'USER_ROLES',
     function($routeProvider, USER_ROLES) {
@@ -8,42 +8,49 @@ app.config(['$routeProvider', 'USER_ROLES',
             when('/', {
                 templateUrl: '/views/login.html',
                 controller: 'UserCtrl',
-                require_login: false
+                require_login: false,
+                css: ['/stylesheets/gradient.css', '/stylesheets/signin.css']
             }).
             when('/register', {
                 templateUrl: '/views/registerHTML.html',
                 controller: 'UserCtrl',
-                require_login: false
+                require_login: false,
+                css: ['/stylesheets/gradient.css', '/stylesheets/registerCSS.css']
             }).
             when('/home', {
                 templateUrl: '/views/userPageHTML.html',
                 controller: 'UserCtrl',
                 require_login: true,
-                good_roles: [USER_ROLES.regular, USER_ROLES.judge, USER_ROLES.evt_admin, USER_ROLES.sys_admin]
+                good_roles: [USER_ROLES.regular, USER_ROLES.judge, USER_ROLES.evt_admin, USER_ROLES.sys_admin],
+                css: ['/stylesheets/gradient.css', '/stylesheets/userPageCSS.css']
             }).
             when('/judge/auth', {
                 templateUrl: '/views/judgeEventHTML.html',
                 controller: 'JudgeCtrl',
                 require_login: true,
-                good_roles: [USER_ROLES.regular, USER_ROLES.judge, USER_ROLES.evt_admin, USER_ROLES.sys_admin]
+                good_roles: [USER_ROLES.regular, USER_ROLES.judge, USER_ROLES.evt_admin, USER_ROLES.sys_admin],
+                css: '/stylesheets/gradient.css'
             }).
             when('/addEvent', {
                 templateUrl: '/views/event_page.html',
                 controller: 'EventCtrl',
                 require_login: true,
-                good_roles: [USER_ROLES.evt_admin, USER_ROLES.sys_admin]
+                good_roles: [USER_ROLES.evt_admin, USER_ROLES.sys_admin],
+                css: '/stylesheets/gradient.css'
             }).
             when('/contact_us', {
                 templateUrl: '/views/contactUsHTML.html',
                 controller: 'UserCtrl',
                 require_login: true,
-                good_roles: [USER_ROLES.regular, USER_ROLES.judge, USER_ROLES.evt_admin, USER_ROLES.sys_admin]
+                good_roles: [USER_ROLES.regular, USER_ROLES.judge, USER_ROLES.evt_admin, USER_ROLES.sys_admin],
+                css: '/stylesheets/gradient.css'
             }).
             when('/about_us', {
                 templateUrl: '/views/aboutUsHTML.html',
                 controller: 'UserCtrl',
                 require_login: true,
-                good_roles: [USER_ROLES.regular, USER_ROLES.judge, USER_ROLES.evt_admin, USER_ROLES.sys_admin]
+                good_roles: [USER_ROLES.regular, USER_ROLES.judge, USER_ROLES.evt_admin, USER_ROLES.sys_admin],
+                css: '/stylesheets/aboutPageCSS.css'
             }).
             otherwise({
                 redirectTo: '/'
