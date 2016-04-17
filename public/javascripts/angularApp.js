@@ -33,6 +33,18 @@ app.config(['$routeProvider', 'USER_ROLES',
                 require_login: true,
                 good_roles: [USER_ROLES.evt_admin, USER_ROLES.sys_admin]
             }).
+            when('/contact_us', {
+                templateUrl: '/views/contactUsHTML.html',
+                controller: 'UserCtrl',
+                require_login: true,
+                good_roles: [USER_ROLES.regular, USER_ROLES.judge, USER_ROLES.evt_admin, USER_ROLES.sys_admin]
+            }).
+            when('/about_us', {
+                templateUrl: '/views/aboutUsHTML.html',
+                controller: 'UserCtrl',
+                require_login: true,
+                good_roles: [USER_ROLES.regular, USER_ROLES.judge, USER_ROLES.evt_admin, USER_ROLES.sys_admin]
+            }).
             otherwise({
                 redirectTo: '/'
             });
