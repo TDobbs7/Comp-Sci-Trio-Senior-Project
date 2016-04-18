@@ -74,11 +74,6 @@ app.run(function($location, $rootScope, $route, AuthenticationService, UserServi
         }, function(res) {
           $rootScope.stopAndReport(res);
         });
-
-        /*AuthenticationService.clearCurrentUser();
-
-        $location.path('/');
-        alert("You have logged out");*/
     };
 
     $rootScope.stopAndReport = function(res) {
