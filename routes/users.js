@@ -10,7 +10,7 @@ router.get('/', function(req, res, next) {
     if (err) return next(err);
 
     if (!users) res.status(404).json({"success" : "false", "message" : "No users found"});
-    else res.json({"success" : "true", "users" :users, "timestamp" : new Date(new Date().getTime())});
+    else res.json({"users" :users, "timestamp" : new Date(new Date().getTime())});
   });
 });
 
@@ -18,18 +18,20 @@ router.get('/:email', function(req, res, next) {
   User.findOne({"email" : req.params.email}, function(err, user) {
     if (err) return next(err);
 
-    if (!user) res.status(404).json({'success' : 'false', 'message' :"User with Email" + req.params.email + " not found"});
-    else res.json({'success' : 'true', "user" : user, "timestamp" : new Date(new Date().getTime())});
+    if (!user) res.status(404).json({'message' :"User with Email" + req.params.email + " not found"});
+    else res.json({"user" : user, "timestamp" : new Date(new Date().getTime())});
   });
 });
 
 router.post('/', function(req, res, next) {
   var user = new User(req.body);
 
+  user.user_role = "regular";
+
   user.save(function(err) {
     if (err) return next(err);
 
-    res.send(JSON.parse(JSON.stringify({"success" : " true", "timestamp" : new Date(new Date().getTime()).toUTCString()})));
+    res.send({"timestamp" : new Date(new Date().getTime()).toUTCString()});
   });
 });
 
@@ -40,7 +42,7 @@ router.post('/login', function(req, res, next) {
     User.findOne({'email' : email, 'password' : password}, function(err,user) {
         if (err) return next(err);
 
-        if (!user) res.status(401).json({"success" : "false", "message" : "Invalid username and/or password"});
+        if (!user) res.status(401).json({"message" : "Invalid username and/or password"});
         else {
             var doc = {
                 "name" : user.name,
@@ -50,7 +52,7 @@ router.post('/login', function(req, res, next) {
             };
 
             var timestamp = new Date(new Date().getTime()).toLocaleString();
-            res.json({"success" : "true", "user" : doc, "timestamp" : timestamp});
+            res.json({"user" : doc, "timestamp" : timestamp});
         }
     });
 });

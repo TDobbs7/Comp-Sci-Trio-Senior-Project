@@ -1,6 +1,6 @@
 "use strict";
 
-var app = angular.module('senior_project', ['ngRoute']);
+var app = angular.module('senior_project', ['ngRoute', 'angularCSS']);
 
 app.config(['$routeProvider', 'USER_ROLES',
     function($routeProvider, USER_ROLES) {
@@ -8,42 +8,49 @@ app.config(['$routeProvider', 'USER_ROLES',
             when('/', {
                 templateUrl: '/views/login.html',
                 controller: 'UserCtrl',
-                require_login: false
+                require_login: false,
+                css: ['/stylesheets/gradient.css', '/stylesheets/signin.css']
             }).
             when('/register', {
                 templateUrl: '/views/registerHTML.html',
                 controller: 'UserCtrl',
-                require_login: false
+                require_login: false,
+                css: ['/stylesheets/gradient.css', '/stylesheets/registerCSS.css']
             }).
             when('/home', {
                 templateUrl: '/views/userPageHTML.html',
                 controller: 'UserCtrl',
                 require_login: true,
-                good_roles: [USER_ROLES.regular, USER_ROLES.judge, USER_ROLES.evt_admin, USER_ROLES.sys_admin]
+                good_roles: [USER_ROLES.regular, USER_ROLES.judge, USER_ROLES.evt_admin, USER_ROLES.sys_admin],
+                css: ['/stylesheets/gradient.css', '/stylesheets/userPageCSS.css']
             }).
             when('/judge/auth', {
                 templateUrl: '/views/judgeEventHTML.html',
                 controller: 'JudgeCtrl',
                 require_login: true,
-                good_roles: [USER_ROLES.regular, USER_ROLES.judge, USER_ROLES.evt_admin, USER_ROLES.sys_admin]
+                good_roles: [USER_ROLES.regular, USER_ROLES.judge, USER_ROLES.evt_admin, USER_ROLES.sys_admin],
+                css: '/stylesheets/gradient.css'
             }).
             when('/addEvent', {
                 templateUrl: '/views/event_page.html',
                 controller: 'EventCtrl',
                 require_login: true,
-                good_roles: [USER_ROLES.evt_admin, USER_ROLES.sys_admin]
+                good_roles: [USER_ROLES.evt_admin, USER_ROLES.sys_admin],
+                css: '/stylesheets/gradient.css'
             }).
             when('/contact_us', {
                 templateUrl: '/views/contactUsHTML.html',
                 controller: 'UserCtrl',
                 require_login: true,
-                good_roles: [USER_ROLES.regular, USER_ROLES.judge, USER_ROLES.evt_admin, USER_ROLES.sys_admin]
+                good_roles: [USER_ROLES.regular, USER_ROLES.judge, USER_ROLES.evt_admin, USER_ROLES.sys_admin],
+                css: '/stylesheets/gradient.css'
             }).
             when('/about_us', {
                 templateUrl: '/views/aboutUsHTML.html',
                 controller: 'UserCtrl',
                 require_login: true,
-                good_roles: [USER_ROLES.regular, USER_ROLES.judge, USER_ROLES.evt_admin, USER_ROLES.sys_admin]
+                good_roles: [USER_ROLES.regular, USER_ROLES.judge, USER_ROLES.evt_admin, USER_ROLES.sys_admin],
+                css: '/stylesheets/aboutPageCSS.css'
             }).
             otherwise({
                 redirectTo: '/'
@@ -67,11 +74,6 @@ app.run(function($location, $rootScope, $route, AuthenticationService, UserServi
         }, function(res) {
           $rootScope.stopAndReport(res);
         });
-
-        /*AuthenticationService.clearCurrentUser();
-
-        $location.path('/');
-        alert("You have logged out");*/
     };
 
     $rootScope.stopAndReport = function(res) {
@@ -323,8 +325,10 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
         $scope.addEvent = function(event) {
             event.judges = [];
 
-            event.evt_id = 'EVT-' + Math.random().toString(36).substring(2, 9);
+            event.evt_id = Math.random().toString(36).substring(2, 9);
             event.event_host = $rootScope.currentUserData.user.name;
+
+            //Get file that was chosen
 
             var judgesHTML = $('#judges')[0].children;
 
@@ -332,13 +336,13 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
                 var judge = {};
 
                 judge.name = judgesHTML[i].children.name.value;
-                judge.email = judgesHTML[i].children.email.value;
+                judge.address = judgesHTML[i].children.email.value;
 
                 event.judges.push(judge);
             }
 
             EventService.addEvent(event).then(function(res) {
-                $scope.sendEmail(judges, "Judging!", "Test Test Test");
+                $scope.sendEmail(event.judges, "Judging!");
                 alert('Your event was added at ' + res.data.timestamp);
                 $location.path('/home');
             }, function(res){
@@ -346,13 +350,13 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
             });
         }
 
-        $scope.sendEmail = function(email_recipients, email_subject, message) {
+        $scope.sendEmail = function(judges, email_subject, message) {
             var data = {
                 'email' : {
                     from : 'contactus.scored@gmail.com',
-                    recipients: email_recipients,
+                    recipients: judges,
                     subject: email_subject,
-                    text: message
+                    text: ""
                 }
             };
 
@@ -391,7 +395,7 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
         }
 
         function failed(res) {
-                    $rootScope.stopAndReport(res.data);
-                }
-    }
+            $rootScope.stopAndReport(res.data);
+        }
+}
 ]);

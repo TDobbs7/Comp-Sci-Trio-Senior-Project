@@ -21,20 +21,22 @@ router.post('/email', function(req, res, next) {
     var transporter = nodemailer.createTransport(smtpConfig);
     var email_data = req.body.email;
 
-    email_data.recipients.forEach(function(judge) {
+    console.log(email_data);
+
+    //email_data.recipients.forEach(function(judge) {
         var email = {
             from: email_data.from,
-            to: judge.email,
-            subject: email_data.email_subject,
-            text: email_data.message
+            to: email_data.recipients,
+            subject: email_data.subject,
+            text: email_data.text
         };
 
         transporter.sendMail(email, function(err, info){
             if(err) return next(err);
 
-            res.json({'data' : {'info' : info.response, 'timestamp' : new Date(new Date().getTime())}});
+            res.json({'timestamp' : new Date(new Date().getTime())});
         });
-    });
+    //});
 
     transporter.close();
 });
