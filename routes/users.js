@@ -26,10 +26,12 @@ router.get('/:email', function(req, res, next) {
 router.post('/', function(req, res, next) {
   var user = new User(req.body);
 
+  user.user_role = "regular";
+
   user.save(function(err) {
     if (err) return next(err);
 
-    res.send({"timestamp" : new Date(new Date().getTime()).toUTCString());
+    res.send({"timestamp" : new Date(new Date().getTime()).toUTCString()});
   });
 });
 
