@@ -325,8 +325,10 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
         $scope.addEvent = function(event) {
             event.judges = [];
 
-            event.evt_id = 'EVT-' + Math.random().toString(36).substring(2, 9);
+            event.evt_id = Math.random().toString(36).substring(2, 9);
             event.event_host = $rootScope.currentUserData.user.name;
+
+            //Get file that was chosen
 
             var judgesHTML = $('#judges')[0].children;
 
@@ -340,7 +342,7 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
             }
 
             EventService.addEvent(event).then(function(res) {
-                $scope.sendEmail(event.judges, "Judging!", "Test Test Test");
+                $scope.sendEmail(event.judges, "Judging!");
                 alert('Your event was added at ' + res.data.timestamp);
                 $location.path('/home');
             }, function(res){
@@ -354,7 +356,7 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
                     from : 'contactus.scored@gmail.com',
                     recipients: judges,
                     subject: email_subject,
-                    text: message
+                    text: ""
                 }
             };
 
