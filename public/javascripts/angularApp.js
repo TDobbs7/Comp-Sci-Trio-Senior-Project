@@ -334,13 +334,13 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
                 var judge = {};
 
                 judge.name = judgesHTML[i].children.name.value;
-                judge.email = judgesHTML[i].children.email.value;
+                judge.address = judgesHTML[i].children.email.value;
 
                 event.judges.push(judge);
             }
 
             EventService.addEvent(event).then(function(res) {
-                $scope.sendEmail(judges, "Judging!", "Test Test Test");
+                $scope.sendEmail(event.judges, "Judging!", "Test Test Test");
                 alert('Your event was added at ' + res.data.timestamp);
                 $location.path('/home');
             }, function(res){
@@ -348,11 +348,11 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
             });
         }
 
-        $scope.sendEmail = function(email_recipients, email_subject, message) {
+        $scope.sendEmail = function(judges, email_subject, message) {
             var data = {
                 'email' : {
                     from : 'contactus.scored@gmail.com',
-                    recipients: email_recipients,
+                    recipients: judges,
                     subject: email_subject,
                     text: message
                 }
@@ -393,7 +393,7 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
         }
 
         function failed(res) {
-                    $rootScope.stopAndReport(res.data);
-                }
-    }
+            $rootScope.stopAndReport(res.data);
+        }
+}
 ]);
