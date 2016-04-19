@@ -41,14 +41,14 @@ app.config(['$routeProvider', 'USER_ROLES',
             when('/contact_us', {
                 templateUrl: '/views/contactUsHTML.html',
                 controller: 'UserCtrl',
-                require_login: true,
+                require_login: false,
                 good_roles: [USER_ROLES.regular, USER_ROLES.judge, USER_ROLES.evt_admin, USER_ROLES.sys_admin],
                 css: '/stylesheets/gradient.css'
             }).
             when('/about_us', {
                 templateUrl: '/views/aboutUsHTML.html',
                 controller: 'UserCtrl',
-                require_login: true,
+                require_login: false,
                 good_roles: [USER_ROLES.regular, USER_ROLES.judge, USER_ROLES.evt_admin, USER_ROLES.sys_admin],
                 css: '/stylesheets/aboutPageCSS.css'
             }).
@@ -342,7 +342,18 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
             }
 
             EventService.addEvent(event).then(function(res) {
-                $scope.sendEmail(event.judges, "Judging!");
+                var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+                var message = "Hello,\n\nWe would like to invite you to join this competition, " + event.name +", as a judge" +
+                              " or as an honored guest. The contest will be held at " + event.location + " on "+
+                              months[event.start_date.getMonth()] + " " + event.start_date.getDate() + ", " +
+                              event.start_date.getYear() + " starting at " + formatAMPM(event.start_date) + ". We sincerely " +
+                              "hope that you are available to attend. \n\nGo to scored.ncat.edu to register. You must be " +
+                              "connected to an NCAT network in order to use the website.\n\nWhen registering for this " +
+                              "competition, please use your current destination email as the username and create a "+
+                              "password. After logging in, use the event code provided below to get to the event.\n\n" +
+                              "Event Code: " + event.evt_id + "\n\nAlso, attached is a criteria page. We look forward to " +
+                              "hearing from you soon.\n\nThank you,\n\nScored! Administration";
+                $scope.sendEmail(event.judges, "Judging!", message);
                 alert('Your event was added at ' + res.data.timestamp);
                 $location.path('/home');
             }, function(res){
@@ -356,7 +367,7 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
                     from : 'contactus.scored@gmail.com',
                     recipients: judges,
                     subject: email_subject,
-                    text: ""
+                    text: message
                 }
             };
 
@@ -367,6 +378,17 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
                 }, function(res) { failed(res); }
             );
 
+        }
+
+        function formatAMPM(date) {
+            var hours = date.getHours();
+            var minutes = date.getMinutes();
+            var ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12; // the hour '0' should be '12'
+            minutes = minutes < 10 ? '0'+minutes : minutes;
+            var strTime = hours + ':' + minutes + ' ' + ampm;
+            return strTime;
         }
 
         $scope.addJudge = function(evt) {
