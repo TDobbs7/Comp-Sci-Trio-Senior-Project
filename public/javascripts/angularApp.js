@@ -344,7 +344,7 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
             EventService.addEvent(event).then(function(res) {
                 var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
                 var message = "Hello,\n\nWe would like to invite you to join this competition, " + event.name +", as a judge" +
-                              " or as an honored guest. The contest will be held at " + event.location + " on "+
+                              " or as an honored guest. The contest will be held at " + event.location + " on " +
                               months[event.start_date.getMonth()] + " " + event.start_date.getDate() + ", " +
                               event.start_date.getYear() + " starting at " + formatAMPM(event.start_date) + ". We sincerely " +
                               "hope that you are available to attend. \n\nGo to scored.ncat.edu to register. You must be " +
