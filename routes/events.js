@@ -45,9 +45,25 @@ router.post('/verify', function(req, res, next) {
         }
     });*/
 
-    //var code = req.body.code;
+    var code = req.body.evt_code;
+    var email = req.body.email;
 
-    //Event.findOne({'evt_code'})
+    console.log("code=" + code + " email=" + email);
+    Event.findOne({'evt_id' : code}, function(err, event) {
+        if (err) return next(err);
+        if (!event) res.status(401).json({'message' : 'Invalid Event Code'});
+        else {
+            var found = false;
+            for (var index in event.judges) {
+                if (event.judges[index].address == email) {
+                    found = true;
+                    res.json({'event' : event, "timestamp" : new Date(new Date().getTime()).toLocaleString()});
+                }
+            }
+
+            if(!found) res.status(401).json({'message' : 'You are not authorized to judge this event!'});
+        }
+    });
 });
 
 router.put('/:email', function(req, res, next) {

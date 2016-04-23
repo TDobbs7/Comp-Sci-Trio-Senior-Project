@@ -72,9 +72,24 @@ app.run(function($location, $rootScope, $route, AuthenticationService, UserServi
             $location.path('/');
             alert("You have logged out");
         }, function(res) {
-          $rootScope.stopAndReport(res);
+          $rootScope.stopAndReport(res.data);
         });
     };
+
+    $rootScope.sendEmail = function(judges, email_subject, message) {
+        var data = {
+            'email' : {
+                from : 'contactus.scored@gmail.com',
+                recipients: judges,
+                subject: email_subject,
+                text: message
+            }
+        };
+
+        EmailService.sendEmail(data).then(
+            function(res) {}, function(res) { failed(res); }
+        );
+    }
 
     $rootScope.stopAndReport = function(res) {
         event.preventDefault();
@@ -146,11 +161,11 @@ app.factory('UserService', ['$http', '$rootScope',
         // private functions
 
         function handleSuccess(res) {
-            return {"success" : true, "data" : res.data};
+            return {"data" : res.data};
         }
 
         function handleError(error) {
-            return {"success" : false, "message" : error};
+            return {"message" : error};
         }
     }
 ])
@@ -177,16 +192,16 @@ app.factory('UserService', ['$http', '$rootScope',
             return $http.delete('/events/' + event.evt_id, event).then(handleSuccess, handleError("Error deleting email"));
         }
 
-        function verifyEventCode(code) {
-            return $http.post('/events/verify', code).then(handleSuccess, handleError("Invalid event code"));
+        function verifyEventCode(credentials) {
+            return $http.post('/events/verify', credentials).then(handleSuccess, handleError("Invalid event code"));
         }
 
         function handleSuccess(res) {
-            return {"success" : true, "data" : res.data};
+            return {"data" : res.data};
         }
 
         function handleError(error) {
-            return {"success" : false, "message" : error};
+            return {"message" : error};
         }
     }
 ])
@@ -232,11 +247,11 @@ app.factory('UserService', ['$http', '$rootScope',
         }
 
         function handleSuccess(res) {
-            return {"success" : true, "data" : res.data};
+            return {"data" : res.data};
         }
 
         function handleError(error) {
-            return {"success" : false, "message" : error};
+            return {"message" : error};
         }
     }
 ])
@@ -253,11 +268,11 @@ app.factory('UserService', ['$http', '$rootScope',
         }
 
         function handleSuccess(res) {
-            return {"success" : true, "data" : res.data};
+            return {"data" : res.data};
         }
 
         function handleError(error) {
-            return {"success" : false, "message" : error};
+            return {"message" : error};
         }
     }
 ]);
@@ -289,31 +304,22 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
                     }, failed);
             }
         }
-
-        $scope.sendEmail = function(email_recipients, email_subject, message) {
-            var data = {
-                'email' : {
-                    from : 'contactus.scored@gmail.com',
-                    recipients: email_recipients,
-                    subject: email_subject,
-                    text: message
-                }
-            };
-
-            EmailService.sendEmail(data).then(
-                function(res) {
-                    //alert("Email sent successfully to " + data.email.to + " at " + res.data.timestamp);
-                    //$location.path('/home');
-                }, failed
-            );
-
-        }
     }
 ])
-.controller('JudgeCtrl', ['$scope', 'EventService',
-    function($scope, EventService) {
+.controller('JudgeCtrl', ['$scope', '$rootScope', '$location', 'EventService',
+    function($scope, $rootScope, $location, EventService) {
         $scope.verifyEventCode = function(code) {
-            //EventService.
+            var credentials = {
+                email: $rootScope.currentUserData.user.email,
+                evt_code: code
+            };
+
+            EventService.verifyEventCode(credentials).then(function(res) {
+                alert("You can now judge this event: " + res.data.event.name);
+                $location.path('/home');
+            }, function(res) {
+                $rootScope.stopAndReport(res.data);
+            });
         }
     }
 ])
@@ -346,38 +352,19 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
                 var message = "Hello,\n\nWe would like to invite you to join this competition, " + event.name +", as a judge" +
                               " or as an honored guest. The contest will be held at " + event.location + " on " +
                               months[event.start_date.getMonth()] + " " + event.start_date.getDate() + ", " +
-                              event.start_date.getYear() + " starting at " + formatAMPM(event.start_date) + ". We sincerely " +
+                              event.start_date.getFullYear() + " starting at " + formatAMPM(event.start_date) + ". We sincerely " +
                               "hope that you are available to attend. \n\nGo to scored.ncat.edu to register. You must be " +
                               "connected to an NCAT network in order to use the website.\n\nWhen registering for this " +
                               "competition, please use your current destination email as the username and create a "+
                               "password. After logging in, use the event code provided below to get to the event.\n\n" +
                               "Event Code: " + event.evt_id + "\n\nAlso, attached is a criteria page. We look forward to " +
                               "hearing from you soon.\n\nThank you,\n\nScored! Administration";
-                $scope.sendEmail(event.judges, "Judging!", message);
+                $rootScope.sendEmail(event.judges, "Judging!", message);
                 alert('Your event was added at ' + res.data.timestamp);
                 $location.path('/home');
             }, function(res){
-                $rootScope.stopAndReport(res);
+                $rootScope.stopAndReport(res.data);
             });
-        }
-
-        $scope.sendEmail = function(judges, email_subject, message) {
-            var data = {
-                'email' : {
-                    from : 'contactus.scored@gmail.com',
-                    recipients: judges,
-                    subject: email_subject,
-                    text: message
-                }
-            };
-
-            EmailService.sendEmail(data).then(
-                function(res) {
-                    //alert("Email sent successfully to " + data.email.to + " at " + res.data.timestamp);
-                    //$location.path('/home');
-                }, function(res) { failed(res); }
-            );
-
         }
 
         function formatAMPM(date) {
