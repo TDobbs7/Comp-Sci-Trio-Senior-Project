@@ -321,6 +321,7 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
     function($scope, $rootScope, $compile, $location, EventService, EmailService) {
         $scope.event = {};
         $scope.number_of_judges = 1;
+        $scope.number_of_criteria=1;
 
         $scope.addEvent = function(event) {
             event.judges = [];
@@ -339,6 +340,15 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
                 judge.address = judgesHTML[i].children.email.value;
 
                 event.judges.push(judge);
+            }
+            //add crtieria for loop
+            var criteriaHTML= $('jcrit')[0].children;
+            for (var i = 0; i < criteriaHTML.length; i++) {
+                var criteria = {};
+
+                criteria.name = criteriaHTML[i].children.name.value;
+
+                event.criteria.push(criteria);
             }
 
             EventService.addEvent(event).then(function(res) {
@@ -397,5 +407,36 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
         function failed(res) {
             $rootScope.stopAndReport(res.data);
         }
+
+        $scope.addCriteria= function(evt){
+            evt.preventDefault();
+
+            $scope.number_of_criteria++;
+            el = document.createElement('div');
+            var divIDName = 'jcrit-' + $scope.number_of_criteria;
+            el.setAttribute('id', divIDName);
+            el.setAttribute('class', 'form-group');
+            el.innerHTML = '<button data-ng-click="removeCriteria($event,' + $scope.number_of_criteria + ');" class="btn btn-info">-</button> <input type="text" placeholder="Criteria" name="criteria" class="input" required>';
+
+            var temp = $compile(el)($scope);
+            angular.element(document.querySelector('#jcrit')).append(temp);
+        }
+
+
+         $scope.removeCriteria = function(evt, num) {
+               evt.preventDefault();
+
+              $scope.number_of_criteria--;
+
+               var c = document.getElementById('jcrit');
+               var del = document.getElementById('jcrit-' + num);
+               c.removeChild(del);
+                }
+
+              function failed(res) {
+                $rootScope.stopAndReport(res.data);
+              }
+         }
+
 }
 ]);
