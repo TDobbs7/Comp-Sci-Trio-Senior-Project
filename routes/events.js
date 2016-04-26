@@ -25,30 +25,9 @@ router.post('/', function(req, res, next) {
 });
 
 router.post('/verify', function(req, res, next) {
-    /*var email = req.body.email;
-    var password = req.body.password;
-
-    User.findOne({'email' : email, 'password' : password}, function(err,user) {
-        if (err) return next(err);
-
-        if (!user) res.status(401).json({"success" : "false", "message" : "Invalid username and/or password"});
-        else {
-            var doc = {
-                "name" : user.name,
-                "email" : user.email,
-                "last_login" : user.last_login,
-                "user_role" : user.user_role
-            };
-
-            var timestamp = new Date(new Date().getTime()).toLocaleString();
-            res.json({"success" : "true", "user" : doc, "timestamp" : timestamp});
-        }
-    });*/
-
     var code = req.body.evt_code;
     var email = req.body.email;
 
-    console.log("code=" + code + " email=" + email);
     Event.findOne({'evt_id' : code}, function(err, event) {
         if (err) return next(err);
         if (!event) res.status(401).json({'message' : 'Invalid Event Code'});
@@ -79,7 +58,7 @@ router.put('/:email', function(req, res, next) {
         User.update({'email' : req.params.email}, aUser, {'upsert' : true}, function(err2) {
             if (err2) return next(err2);
 
-            res.send(JSON.parse(JSON.stringify({"timestamp" : new Date(new Date().getTime()).toUTCString()})));
+            res.send({"timestamp" : new Date(new Date().getTime()).toUTCString()});
         });
     }
   });
