@@ -428,7 +428,7 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
 
               $scope.number_of_criteria--;
 
-               var c = document.getElementById('jcrit');
+              var c = document.getElementById('jcrit');
                var del = document.getElementById('jcrit-' + num);
                c.removeChild(del);
                 }
