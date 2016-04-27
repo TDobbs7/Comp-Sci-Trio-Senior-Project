@@ -7,17 +7,16 @@
                 </div>
                 <div class="panel-body">
 
-                    <form class="form-inline">
+                    <form class="form-inline" data-ng-submit="verifyEventCode(evt_code)">
                         <div class="form-group">
                             <label for="password">Event Code:</label>
-                            <input type="password" name="eventCode" id="password" class="form-control input-md floatlabel" placeholder="i.e. Xl1sj228">
+                            <input type="password" data-ng-model="evt_code" id="password" class="form-control input-md floatlabel" placeholder="i.e. Xl1sj228" required>
 
                         </div>
                         <br><br>
                         <div class="line">
                             <div class="form-group center-block">
                                 <input type="submit" value="Enter" class="btn btn-info btn-md">
-                                <!--    <button type="submit" class="btn btn-info btn-md center-block">Enter</button> -->
                             </div>
                             <div class="form-group right">
                                 <a href="#/home" class="btn btn-danger btn-md form-control" role="button">Cancel</a>

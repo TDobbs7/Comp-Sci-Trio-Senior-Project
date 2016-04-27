@@ -19,17 +19,33 @@
                     <input type="datetime-local" data-ng-model="event.start_date" class="input" required>
                 </div>
                 <div class="form-group">
-                    <label class="col-md-2 control-label">End Date: </label>
+                    <label class="col-md-2 control-label">End Date:</label>
                     <input type="datetime-local" data-ng-model="event.end_date" class="input" required>
                 </div>
 
-                <h2 class="form-group panel-title"> <strong> Enter Full Name and Email of Judges </strong> </h2><br>
+                <h2 class="form-group panel-title"> <strong>Enter Full Name and Email of Judges</strong> </h2><br>
                 <div id="judges">
                     <div id="judge-1" class="form-group">
                         <button data-ng-click="addJudge($event);" class="btn btn-primary">+</button>
                         <input type="text" placeholder="full name" name="name" class="input">
                         <input type="email" placeholder="youremail@email.com" name="email" class="input">
                     </div>
+                </div>
+
+                <h2 class="form-group panel-title"><strong>What are The Judge Criteria for your event</strong></h2><br>
+                <div id="jcrit">
+                    <div id="jcrit-1" class="form-group">
+                        <button data-ng-click="addCriteria($event);" class="btn btn-primary">+</button>
+                        <input type="text" placeholder="Criteria" name="criteria" class="input">
+                    </div>
+                </div>
+
+                <h2 class="form-group panel-title"> <strong>How would you like to Judge Page Formatted</strong></h2>
+                <div align="left">
+                    <label><input type="radio" style="vertical-align: middle; margin: 0px" name="tblebttn" required>
+                        1-5 (5 being the highest)</label>
+                    <label><input type="radio" style="vertical-align: middle; margin: 0px" name="tblebttn">
+                        1-10 (10 being the highest)</label>
                 </div>
 
                 <!--<input type="hidden" name="message" value=" dummy message">-->

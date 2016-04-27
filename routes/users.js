@@ -18,7 +18,7 @@ router.get('/:email', function(req, res, next) {
   User.findOne({"email" : req.params.email}, function(err, user) {
     if (err) return next(err);
 
-    if (!user) res.status(404).json({'message' :"User with Email" + req.params.email + " not found"});
+    if (!user) res.status(404).json({'message' :"User with Email " + req.params.email + " not found"});
     else res.json({"user" : user, "timestamp" : new Date(new Date().getTime())});
   });
 });
@@ -26,10 +26,12 @@ router.get('/:email', function(req, res, next) {
 router.post('/', function(req, res, next) {
   var user = new User(req.body);
 
+  user.user_role = "regular";
+
   user.save(function(err) {
     if (err) return next(err);
 
-    res.send({"timestamp" : new Date(new Date().getTime()).toUTCString()});
+    res.json({"timestamp" : new Date(new Date().getTime()).toUTCString()});
   });
 });
 
@@ -68,7 +70,7 @@ router.put('/:email', function(req, res, next) {
         User.update({'email' : req.params.email}, aUser, {'upsert' : true}, function(err2) {
             if (err2) return next(err2);
 
-            res.send(JSON.parse(JSON.stringify({"timestamp" : new Date(new Date().getTime()).toUTCString()})));
+            res.json({"timestamp" : new Date(new Date().getTime()).toUTCString()});
         });
     }
   });
