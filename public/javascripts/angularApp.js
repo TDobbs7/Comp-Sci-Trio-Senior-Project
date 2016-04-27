@@ -58,7 +58,7 @@ app.config(['$routeProvider', 'USER_ROLES',
     }
 ]);
 
-app.run(function($location, $rootScope, $route, AuthenticationService, UserService) {
+app.run(function($location, $rootScope, $route, AuthenticationService, UserService, EmailService) {
     $rootScope.location = $location;
     $rootScope.currentUserData = JSON.parse(window.localStorage.getItem("user"));
     $rootScope.requestedPerson = JSON.parse(window.localStorage.getItem("req_person"));
@@ -76,19 +76,31 @@ app.run(function($location, $rootScope, $route, AuthenticationService, UserServi
         });
     };
 
-    $rootScope.sendEmail = function(judges, email_subject, message) {
+    $rootScope.sendEmail = function(sender, recs, email_subject, message) {
         var data = {
             'email' : {
-                from : 'contactus.scored@gmail.com',
-                recipients: judges,
+                from : sender,
+                recipients: recs,
                 subject: email_subject,
                 text: message
             }
         };
 
         EmailService.sendEmail(data).then(
-            function(res) {}, function(res) { failed(res); }
+            function(res) {
+                alert("Your email was sent!");
+                $location.path('/');
+            }, function(res) { failed(res); }
         );
+    }
+
+    $rootScope.contactUs = function(contacter) {
+        var sender = contacter.email_addr;
+        var recipients = ["contactus.scored@gmail.com"];
+        var subject = contacter.email_subject;
+        var text = "You received a message from " + contacter.name + ". Here is the message:\n\n" + contacter.email_message;
+
+        $rootScope.sendEmail(sender, recipients, subject, text)
     }
 
     $rootScope.stopAndReport = function(res) {
@@ -327,6 +339,7 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
     function($scope, $rootScope, $compile, $location, EventService, EmailService) {
         $scope.event = {};
         $scope.number_of_judges = 1;
+        $scope.number_of_criteria = 1;
 
         $scope.addEvent = function(event) {
             event.judges = [];
@@ -359,7 +372,7 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
                               "password. After logging in, use the event code provided below to get to the event.\n\n" +
                               "Event Code: " + event.evt_id + "\n\nAlso, attached is a criteria page. We look forward to " +
                               "hearing from you soon.\n\nThank you,\n\nScored! Administration";
-                $rootScope.sendEmail(event.judges, "Judging!", message);
+                $rootScope.sendEmail("contactus.scored@gmail.com", event.judges, "Judging!", message);
                 alert('Your event was added at ' + res.data.timestamp);
                 $location.path('/home');
             }, function(res){
@@ -406,5 +419,30 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
         function failed(res) {
             $rootScope.stopAndReport(res.data);
         }
-}
+
+        $scope.addCriteria= function(evt){
+            evt.preventDefault();
+
+            $scope.number_of_criteria++;
+            var el = document.createElement('div');
+            var divIDName = 'jcrit-' + $scope.number_of_criteria;
+            el.setAttribute('id', divIDName);
+            el.setAttribute('class', 'form-group');
+            el.innerHTML = '<button data-ng-click="removeCriteria($event,' + $scope.number_of_criteria + ');" class="btn btn-info">-</button> <input type="text" placeholder="Criteria" name="criteria" class="input" required>';
+
+            var temp = $compile(el)($scope);
+            angular.element(document.querySelector('#jcrit')).append(temp);
+        }
+
+        $scope.removeCriteria = function(evt, num) {
+            evt.preventDefault();
+
+            $scope.number_of_criteria--;
+
+            var j = document.getElementById('jcrit');
+            var delDiv = document.getElementById('jcrit-' + num);
+            j.removeChild(delDiv);
+        }
+
+    }
 ]);
