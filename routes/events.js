@@ -14,6 +14,15 @@ router.get('/', function(req, res, next) {
   });
 });
 
+router.get('/:evt_id', function(req, res, next) {
+    Event.findOne({"evt_id" : req.params.evt_id}, function(err, event) {
+        if (err) return next(err);
+
+        if(!event) res.status(404).json({"message" : "No event found"});
+        else res.json({"event" : event, "timestamp" : new Date(new Date().getTime()).toLocaleString()});
+    });
+});
+
 router.post('/', function(req, res, next) {
   var event = new Event(req.body);
 

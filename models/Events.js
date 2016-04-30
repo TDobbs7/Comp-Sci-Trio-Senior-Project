@@ -8,6 +8,8 @@ var EventSchema = new mongoose.Schema({
     start_date: Date,
     end_date: Date,
     judges: [],
+    criteria: [],
+    max_scale: Number,
     winner: String
 }, { collection : 'events', versionKey : false });
 

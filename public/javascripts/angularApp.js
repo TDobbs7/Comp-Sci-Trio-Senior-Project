@@ -52,6 +52,13 @@ app.config(['$routeProvider', 'USER_ROLES',
                 good_roles: [USER_ROLES.regular, USER_ROLES.judge, USER_ROLES.evt_admin, USER_ROLES.sys_admin],
                 css: '/stylesheets/aboutPageCSS.css'
             }).
+            when('/judge/event_form', {
+                templateUrl: '/views/formPage.html',
+                controller: 'JudgeCtrl',
+                require_login: true,
+                good_roles: [USER_ROLES.judge, USER_ROLES.sys_admin],
+                css: '/stylesheets/gradient.css'
+            }).
             otherwise({
                 redirectTo: '/'
             });
@@ -189,11 +196,16 @@ app.factory('UserService', ['$http', '$rootScope',
         service.editEvent = editEvent;
         service.removeEvent = removeEvent;
         service.verifyEventCode = verifyEventCode;
+        service.getEvent = getEvent;
 
         return service;
 
         function addEvent(event) {
             return $http.post('/events', event).then(handleSuccess, handleError("Error adding event"));
+        }
+
+        function getEvent(evt_id) {
+            return $http.get('/events/' + evt_id).then(handleSuccess, handleError("Event does not exist"));
         }
 
         function editEvent(event) {
@@ -320,6 +332,8 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
 ])
 .controller('JudgeCtrl', ['$scope', '$rootScope', '$location', 'EventService',
     function($scope, $rootScope, $location, EventService) {
+        $scope.event = {};
+
         $scope.verifyEventCode = function(code) {
             var credentials = {
                 email: $rootScope.currentUserData.user.email,
@@ -327,11 +341,37 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
             };
 
             EventService.verifyEventCode(credentials).then(function(res) {
-                alert("You can now judge this event: " + res.data.event.name);
-                $location.path('/home');
+                $scope.event = res.data.event;
+                alert("You can now judge this event: " + $scope.event.name);
+                $location.path('/judge/event_form');
             }, function(res) {
                 $rootScope.stopAndReport(res.data);
             });
+        }
+
+        $scope.populateForm = function() {
+            /*var el = document.createElement('div');
+            el.setAttribute('data-ng-model', "event.name");
+            el.setAttribute('class', 'form-group');
+            el.innerHTML = '<input type="text" data-ng-model="event.name"  readonly>'
+
+            var temp = $compile(el)($scope);
+            angular.element(document.querySelector('#judges')).append(temp);*/
+
+            $scope.event.criteria.forEach(function(criteria, index) {
+                var el = document.createElement('div');
+                el.setAttribute('id', 'crit-' + (index+1));
+                el.innerHTML = '<label class="col-md-2 control-label">' + criteria + '</label><input type="range" defaultValue="1" min="1" max="' + $scope.event.max_scale + '" step="1">';
+
+                var temp = $compile(el)($scope);
+                angular.element(document.querySelector("#criteria")).append(temp);
+            });
+
+            //Diplay Location
+            //Team/Project Name
+            //Criteria w Radio Buttons
+
+            //Comment Box
         }
     }
 ])

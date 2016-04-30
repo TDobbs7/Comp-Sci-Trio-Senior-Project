@@ -1,0 +1,24 @@
+<div class="panel-body">
+    <form data-ng-init="populateForm()">
+        <div class="form-group">
+            <label class="col-md-2 control-label">Event Name:</label>
+            <input type="text" data-ng-model="event.name" readonly>
+        </div>
+        <div class="form-group">
+            <label class="col-md-2 control-label">Event Location:</label>
+            <input type="text" data-ng-model="event.location" readonly>
+        </div>
+        <div class="form-group">
+            <label class="col-md-2 control-label">Team/Project Name:</label>
+            <input type="text" placeholder="Team/Project Name" data-ng-model="judge_form.team" required>
+        </div>
+
+        <div class="form-group" id="criteria">
+
+        </div>
+        <div class="form-group">
+            <label class="col-md-2 control-label">Additional Comments:</label>
+            <textarea rows="6" cols="50"></textarea>
+        </div>
+    </form>
+</div>
