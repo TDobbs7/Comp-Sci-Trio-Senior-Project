@@ -25,29 +25,24 @@ router.post('/', function(req, res, next) {
 });
 
 router.post('/verify', function(req, res, next) {
-    /*var email = req.body.email;
-    var password = req.body.password;
+    var code = req.body.evt_code;
+    var email = req.body.email;
 
-    User.findOne({'email' : email, 'password' : password}, function(err,user) {
+    Event.findOne({'evt_id' : code}, function(err, event) {
         if (err) return next(err);
-
-        if (!user) res.status(401).json({"success" : "false", "message" : "Invalid username and/or password"});
+        if (!event) res.status(401).json({'message' : 'Invalid Event Code'});
         else {
-            var doc = {
-                "name" : user.name,
-                "email" : user.email,
-                "last_login" : user.last_login,
-                "user_role" : user.user_role
-            };
+            var found = false;
+            for (var index in event.judges) {
+                if (event.judges[index].address == email) {
+                    found = true;
+                    res.json({'event' : event, "timestamp" : new Date(new Date().getTime()).toLocaleString()});
+                }
+            }
 
-            var timestamp = new Date(new Date().getTime()).toLocaleString();
-            res.json({"success" : "true", "user" : doc, "timestamp" : timestamp});
+            if(!found) res.status(401).json({'message' : 'You are not authorized to judge this event!'});
         }
-    });*/
-
-    //var code = req.body.code;
-
-    //Event.findOne({'evt_code'})
+    });
 });
 
 router.put('/:email', function(req, res, next) {
@@ -63,7 +58,7 @@ router.put('/:email', function(req, res, next) {
         User.update({'email' : req.params.email}, aUser, {'upsert' : true}, function(err2) {
             if (err2) return next(err2);
 
-            res.send(JSON.parse(JSON.stringify({"timestamp" : new Date(new Date().getTime()).toUTCString()})));
+            res.send({"timestamp" : new Date(new Date().getTime()).toUTCString()});
         });
     }
   });
