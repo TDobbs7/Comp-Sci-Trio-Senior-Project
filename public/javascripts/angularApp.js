@@ -286,7 +286,12 @@ app.factory('UserService', ['$http', '$rootScope',
         }
 
         function isAuthorized(good_roles) {
-            return (good_roles.indexOf($rootScope.currentUserData.user.user_role) !== -1);
+            //return (good_roles.indexOf($rootScope.currentUserData.user.user_role) !== -1);
+            for(var index in $rootScope.currentUserData.user.user_role) {
+                if (good_roles.indexOf($rootScope.currentUserData.user.user_role[index]) !== -1) return true;
+            }
+
+            return false;
         }
 
         function handleSuccess(res) {
@@ -332,7 +337,7 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
         }
 
         function failed(res) {
-            $rootScope.stopAndReport(res.data);
+            $rootScope.stopAndReport(res);
         }
 
         $scope.register = function(user) {
@@ -349,8 +354,8 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
         }
     }
 ])
-.controller('JudgeCtrl', ['$scope', '$rootScope', '$location', 'EventService',
-    function($scope, $rootScope, $location, EventService) {
+.controller('JudgeCtrl', ['$scope', '$rootScope', '$location', 'EventService', 'UserService', 'USER_ROLES',
+    function($scope, $rootScope, $location, EventService, UserService, USER_ROLES) {
         $scope.event = {};
 
         $scope.verifyEventCode = function(code) {
@@ -361,10 +366,17 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
 
             EventService.verifyEventCode(credentials).then(function(res) {
                 $scope.event = res.data.event;
-                alert("You can now judge this event: " + $scope.event.name);
-                $location.path('/judge/event_form');
+
+                $rootScope.currentUserData.user.user_role.append(USER_ROLES.judge);
+
+                UserService.UpdateUser($rootScope.currentUserData.user).then(function(res) {
+                    alert("You can now judge this event: " + $scope.event.name);
+                    $location.path('/judge/event_form');
+                }, function(res) {
+                    $rootScope.stopAndReport(res);
+                });
             }, function(res) {
-                $rootScope.stopAndReport(res.data);
+                $rootScope.stopAndReport(res);
             });
         }
 
@@ -394,8 +406,8 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
         }
     }
 ])
-.controller('EventCtrl', ['$scope', '$rootScope', '$compile', '$location', 'EventService', 'EmailService',
-    function($scope, $rootScope, $compile, $location, EventService, EmailService) {
+.controller('EventCtrl', ['$scope', '$rootScope', '$compile', '$location', 'UserService', 'EventService', 'EmailService',
+    function($scope, $rootScope, $compile, $location, UserService, EventService, EmailService) {
         $scope.event = {};
         $scope.number_of_judges = 1;
         $scope.number_of_criteria = 1;
@@ -432,10 +444,17 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
                               "Event Code: " + event.evt_id + "\n\nAlso, attached is a criteria page. We look forward to " +
                               "hearing from you soon.\n\nThank you,\n\nScored! Administration";
                 $rootScope.sendEmail("contactus.scored@gmail.com", event.judges, "Judging!", message);
-                alert('Your event was added at ' + res.data.timestamp);
-                $location.path('/home');
+
+                $rootScope.currentUserData.user.user_role.append(USER_ROLES.evt_admin);
+
+                UserService.updateUser($rootScope.currentUserData.user).then(function(res) {
+                    alert('Your event was added at ' + res.data.timestamp);
+                    $location.path('/home');
+                }, function(res) {
+                    $rootScope.stopAndReport(res);
+                });
             }, function(res){
-                $rootScope.stopAndReport(res.data);
+                $rootScope.stopAndReport(res);
             });
         }
 
@@ -502,6 +521,5 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
             var delDiv = document.getElementById('jcrit-' + num);
             j.removeChild(delDiv);
         }
-
     }
 ]);
