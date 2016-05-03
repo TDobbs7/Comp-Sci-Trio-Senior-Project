@@ -59,6 +59,13 @@ app.config(['$routeProvider', 'USER_ROLES',
                 good_roles: [USER_ROLES.judge, USER_ROLES.sys_admin],
                 css: '/stylesheets/gradient.css'
             }).
+            when('/viewEvents', {
+                templateUrl: '/views/viewEventsHTML.html',
+                controller: 'EventCtrl',
+                require_login: true,
+                good_roles: [USER_ROLES.regular, USER_ROLES.judge, USER_ROLES.evt_admin, USER_ROLES.sys_admin],
+                css: '/stylesheets/gradient.css'
+            }).
             otherwise({
                 redirectTo: '/'
             });
@@ -193,12 +200,19 @@ app.factory('UserService', ['$http', '$rootScope',
         var service = {};
 
         service.addEvent = addEvent;
+        service.getAllEvents = getAllEvents;
         service.editEvent = editEvent;
         service.removeEvent = removeEvent;
         service.verifyEventCode = verifyEventCode;
         service.getEvent = getEvent;
 
+        service.events = [];
+
         return service;
+
+        function getAllEvents() {
+            return $http.get('/events').then(setEvents, handleError("No events found"));
+        }
 
         function addEvent(event) {
             return $http.post('/events', event).then(handleSuccess, handleError("Error adding event"));
@@ -218,6 +232,11 @@ app.factory('UserService', ['$http', '$rootScope',
 
         function verifyEventCode(credentials) {
             return $http.post('/events/verify', credentials).then(handleSuccess, handleError("Invalid event code"));
+        }
+
+        function setEvents(res) {
+            $scope.events = res.data.events;
+            handleSuccess(res);
         }
 
         function handleSuccess(res) {
