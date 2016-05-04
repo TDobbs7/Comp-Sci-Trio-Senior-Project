@@ -4,7 +4,7 @@ var UserSchema = new mongoose.Schema({
     name: String,
     email: String,
     password: String,
-    user_role: String,
+    user_role: [],
     last_login: Date
 }, {collection : 'users', discriminatorKey: 'kind', versionKey : false});
 

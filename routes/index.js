@@ -21,8 +21,6 @@ router.post('/email', function(req, res, next) {
     var transporter = nodemailer.createTransport(smtpConfig);
     var email_data = req.body.email;
 
-    console.log(email_data);
-
     //email_data.recipients.forEach(function(judge) {
         var email = {
             from: email_data.from,

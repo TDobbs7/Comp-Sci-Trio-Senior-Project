@@ -34,7 +34,9 @@
                 <ul class="nav navbar-nav navbar-right" >
                     <li><a style="color: white; background-color: transparent" href="#/about_us" target="_blank">About Us <span class="glyphicon glyphicon-info-sign"></span></a></li>
                     <li><a style="color: white; background-color: transparent" href="#/contact_us" target="_blank">Contact Us <span class="glyphicon glyphicon-envelope"></span></a></li>
+                    <li data-ng-if="route.require_login"><a style="color: white; background-color: transparent" href="#/" target="_blank" data-ng-click="logout()">Log Out <span class="glyphicon glyphicon-log-out"></span></a></li>
                 </ul>
+
             </div>
         </nav>
     <div data-ng-view>
