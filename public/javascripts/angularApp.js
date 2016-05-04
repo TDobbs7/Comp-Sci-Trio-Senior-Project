@@ -414,11 +414,10 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
 
         $scope.addEvent = function(event) {
             event.judges = [];
+            event.criteria = [];
 
             event.evt_id = Math.random().toString(36).substring(2, 9);
             event.event_host = $rootScope.currentUserData.user.name;
-
-            //Get file that was chosen
 
             var judgesHTML = $('#judges')[0].children;
 
@@ -430,6 +429,16 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
 
                 event.judges.push(judge);
             }
+
+            var criteriaHTML = $('#jcrit')[0].children;
+
+            for (var i = 0; i < criteriaHTML.length; i++) {
+                var criterion = criteriaHTML[i].children.criterion.value;
+
+                event.criteria.push(criterion);
+            }
+
+            event.max_scale = $('input[name="tblebttn"]:checked').val();
 
             EventService.addEvent(event).then(function(res) {
                 var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];

@@ -36,26 +36,24 @@
                 <div id="jcrit">
                     <div id="jcrit-1" class="form-group">
                         <button data-ng-click="addCriteria($event);" class="btn btn-primary">+</button>
-                        <input type="text" placeholder="Criteria" name="criteria" class="input">
+                        <input type="text" placeholder="Criterion" name="criterion" class="input">
                     </div>
                 </div>
 
                 <h2 class="form-group panel-title"> <strong>How would you like to Judge Page Formatted</strong></h2>
                 <div align="left">
-                    <label><input type="radio" style="vertical-align: middle; margin: 0px" name="tblebttn" required>
+                    <label><input type="radio" style="vertical-align: middle; margin: 0px" name="tblebttn" value="5" required>
                         1-5 (5 being the highest)</label>
-                    <label><input type="radio" style="vertical-align: middle; margin: 0px" name="tblebttn">
+                    <label><input type="radio" style="vertical-align: middle; margin: 0px" name="tblebttn" value="10" required>
                         1-10 (10 being the highest)</label>
                 </div>
 
-                <!--<input type="hidden" name="message" value=" dummy message">-->
                 <br>
-                <h2 class="form-group panel-title"> <strong>Select one or more files for your detailed Rubric Criteria</strong> </h2><br>
-                <input type="file" data-ng-model="event.rubric_file" multiple size="50" required>
+                <!--<h2 class="form-group panel-title"> <strong>Select one or more files for your detailed Rubric Criteria</strong> </h2><br>
+                <input type="file" data-ngf-select data-ng-model="event.rubric_file" data-ngf-multiple="true" size="50" required>
                 <br>
                 <p><strong>Tip:</strong> Use the Control or the Shift key to select multiple files.</p>
-                <br>
-                <!--<button type="submit" value="Send Email" name="mySubmit" class="button">Submit</button>-->
+                <br>-->
                 <input class="btn btn-success" type="submit" value="Submit">
             </form>
         </div>
