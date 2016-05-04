@@ -17,12 +17,14 @@
                 </thead>
                 <tbody>
 
-                    <tr data-ng-repeat="event in EventService.events">
+                <div ng-repeat = "event in EventService.events">
+                    <tr>
                         <td>{{event.name}}</td>
                         <td>{{event.location}}</td>
                         <td>{{event.start_date}}</td>
                         <td>{{event.end_date}}</td>
                     </tr>
+                </div>
 
                 </tbody>
             </table>
@@ -40,11 +42,11 @@
                 </div>
                 <div class="form-group">
                     <label class="col-md-2 control-label">Start Date:</label>
-                    <input type="datetime-local" data-ng-model="event.start_date" class="input" required>
+                    <input type="datetime-local" data-ng-model="event.start_date" class="input" data-ng-change='checkDate(event.start_date,event.end_date)' required>
                 </div>
                 <div class="form-group">
                     <label class="col-md-2 control-label">End Date:</label>
-                    <input type="datetime-local" data-ng-model="event.end_date" class="input" required>
+                    <input type="datetime-local" data-ng-model="event.end_date" class="input" data-ng-change='checkDate(event.start_date,event.end_date)' required>
                 </div>
 
                 <h2 class="form-group panel-title"> <strong>Enter Full Name and Email of Judges</strong> </h2><br>
