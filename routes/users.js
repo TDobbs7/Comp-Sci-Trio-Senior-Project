@@ -24,15 +24,21 @@ router.get('/:email', function(req, res, next) {
 });
 
 router.post('/', function(req, res, next) {
-  var user = new User(req.body);
+    var user = new User(req.body);
 
-  user.user_role = "regular";
+    User.findOne({"email" : user.email}, function(err, user1) {
+        if (err) return next(err);
+        if (user1) res.status(400).json({"message" : "The email address " + user.email + " is already in use."});
+        else {
+            user.user_role = "regular";
 
-  user.save(function(err) {
-    if (err) return next(err);
+            user.save(function(err) {
+                if (err) return next(err);
 
-    res.json({"timestamp" : new Date(new Date().getTime()).toUTCString()});
-  });
+                res.json({"timestamp" : new Date(new Date().getTime()).toUTCString()});
+            });
+        }
+    });
 });
 
 router.post('/login', function(req, res, next) {

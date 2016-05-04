@@ -337,7 +337,7 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
         }
 
         function failed(res) {
-            $rootScope.stopAndReport(res);
+            $rootScope.stopAndReport(res.data);
         }
 
         $scope.register = function(user) {
@@ -373,10 +373,10 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
                     alert("You can now judge this event: " + $scope.event.name);
                     $location.path('/judge/event_form');
                 }, function(res) {
-                    $rootScope.stopAndReport(res);
+                    $rootScope.stopAndReport(res.data);
                 });
             }, function(res) {
-                $rootScope.stopAndReport(res);
+                $rootScope.stopAndReport(res.data);
             });
         }
 
@@ -460,10 +460,10 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
                     alert('Your event was added at ' + res.data.timestamp);
                     $location.path('/home');
                 }, function(res) {
-                    $rootScope.stopAndReport(res);
+                    $rootScope.stopAndReport(res.data);
                 });
             }, function(res){
-                $rootScope.stopAndReport(res);
+                $rootScope.stopAndReport(res.data);
             });
         }
 
