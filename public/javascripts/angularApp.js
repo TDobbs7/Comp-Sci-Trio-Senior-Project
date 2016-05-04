@@ -74,6 +74,7 @@ app.config(['$routeProvider', 'USER_ROLES',
 
 app.run(function($location, $rootScope, $route, AuthenticationService, UserService, EmailService) {
     $rootScope.location = $location;
+    $rootScope.route = $route.routes[$rootScope.location.path()];
     $rootScope.currentUserData = JSON.parse(window.localStorage.getItem("user"));
     $rootScope.requestedPerson = JSON.parse(window.localStorage.getItem("req_person"));
     $rootScope.requestedUser = JSON.parse(window.localStorage.getItem("req_user"));
