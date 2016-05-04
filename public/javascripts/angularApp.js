@@ -364,6 +364,19 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
 ])
 .controller('JudgeCtrl', ['$scope', '$rootScope', '$location', 'EventService', 'UserService', 'USER_ROLES',
     function($scope, $rootScope, $location, EventService, UserService, USER_ROLES) {
+        $scope.judgeForm = {};
+
+        $scope.updateScore = function(index, criterion) {
+            //$('#crit-' + index).innerHTML = criterion + ": " + value;
+            //console.log($scope.);
+            var value = this.slider;
+            document.getElementById('crit-' +index).innerHTML = criterion + ": " + value;
+        }
+
+        $scope.submitJudgeForm = function() {
+
+        }
+
         $scope.verifyEventCode = function(code) {
             var credentials = {
                 email: $rootScope.currentUserData.user.email,
@@ -371,9 +384,6 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
             };
 
             EventService.verifyEventCode(credentials).then(function(res) {
-                //$rootScope.event = res.data.event;
-
-                //$rootScope.currentUserData = JSON.parse(window.localStorage.getItem("user"));
                 window.localStorage.setItem("current_evt_code", JSON.stringify(res.data.event.evt_id));
 
                 var changed = false;
