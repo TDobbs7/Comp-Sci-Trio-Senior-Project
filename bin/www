@@ -41,7 +41,7 @@ server.on('listening', onListening);
 http.createServer(function(req, res){
     res.writeHead(301, {"Location" : "https://" + req.headers['host'] + req.url});
     res.end();
-}).listen(80);
+}).listen(8000);
 
 /**
  * Normalize a port into a number, string, or false.

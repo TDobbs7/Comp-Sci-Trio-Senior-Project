@@ -38,6 +38,13 @@ app.config(['$routeProvider', 'USER_ROLES',
                 good_roles: [USER_ROLES.evt_admin, USER_ROLES.sys_admin],
                 css: '/stylesheets/gradient.css'
             }).
+             when('/viewEvent', {
+                 templateUrl: '/views/viewEventsHTML.html',
+                 controller: 'EventCtrl',
+                 require_login: true,
+                 good_roles: [USER_ROLES.evt_admin, USER_ROLES.sys_admin],
+                 css: '/stylesheets/gradient.css'
+             }).
             when('/contact_us', {
                 templateUrl: '/views/contactUsHTML.html',
                 controller: 'UserCtrl',
@@ -335,6 +342,7 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
         }
     }
 ])
+
 .controller('EventCtrl', ['$scope', '$rootScope', '$compile', '$location', 'EventService', 'EmailService',
     function($scope, $rootScope, $compile, $location, EventService, EmailService) {
         $scope.event = {};
