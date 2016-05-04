@@ -537,5 +537,17 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
             var delDiv = document.getElementById('jcrit-' + num);
             j.removeChild(delDiv);
         }
+
+        $scope.checkDate = function(startDate,endDate) {
+            $scope.errMessage = '';
+            var curDate = new Date();
+
+            if(new Date(startDate) > new Date(endDate)){
+               alert ("End date should not be before Start Date.");
+            }
+            if(new Date(startDate) < curDate){
+               alert ("Start date should not be before today.");
+            }
+        };
     }
 ]);
