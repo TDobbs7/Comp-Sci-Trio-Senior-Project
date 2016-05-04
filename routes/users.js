@@ -49,15 +49,10 @@ router.post('/login', function(req, res, next) {
         if (err) return next(err);
         if (!user) res.status(401).json({"message" : "Invalid username and/or password"});
         else {
-            var doc = {
-                "name" : user.name,
-                "email" : user.email,
-                "last_login" : user.last_login,
-                "user_role" : user.user_role
-            };
+            delete user.password;
 
             var timestamp = new Date(new Date().getTime()).toLocaleString();
-            res.json({"user" : doc, "timestamp" : timestamp});
+            res.json({"user" : user, "timestamp" : timestamp});
         }
     });
 });

@@ -371,18 +371,30 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
             };
 
             EventService.verifyEventCode(credentials).then(function(res) {
-                $rootScope.event = res.data.event;
+                //$rootScope.event = res.data.event;
 
+                //$rootScope.currentUserData = JSON.parse(window.localStorage.getItem("user"));
+                window.localStorage.setItem("current_evt_code", JSON.stringify(res.data.event.evt_id));
+
+                var changed = false;
                 if ($rootScope.currentUserData.user.user_role.indexOf(USER_ROLES.judge) < 0) {
                     $rootScope.currentUserData.user.user_role.push(USER_ROLES.judge);
+                    changed = true;
+                }
 
+                if ($rootScope.currentUserData.user.events_judging.indexOf(res.data.event.evt_id) < 0) {
+                    $rootScope.currentUserData.user.events_judging.push(res.data.event.evt_id);
+                    changed = true;
+                }
+
+                if (changed) {
                     UserService.UpdateUser($rootScope.currentUserData.user).then(function(res) {
                     }, function(res) {
                         $rootScope.stopAndReport(res.data);
                     });
                 }
 
-                alert("You can now judge this event: " + $scope.event.name);
+                alert("You can now judge this event: " + res.data.event.name);
                 $location.path('/judge/event_form');
 
             }, function(res) {
@@ -391,33 +403,14 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
         }
 
         $scope.populateForm = function() {
-            console.log($rootScope.event);
-        }
+            var evt_code = JSON.parse(window.localStorage.getItem("current_evt_code"));
 
-        /*$scope.populateForm = function() {
-            /*var el = document.createElement('div');
-            el.setAttribute('data-ng-model', "event.name");
-            el.setAttribute('class', 'form-group');
-            el.innerHTML = '<input type="text" data-ng-model="event.name"  readonly>'
-
-            var temp = $compile(el)($scope);
-            angular.element(document.querySelector('#judges')).append(temp);*/
-
-            /*$scope.event.criteria.forEach(function(criteria, index) {
-                var el = document.createElement('div');
-                el.setAttribute('id', 'crit-' + (index+1));
-                el.innerHTML = '<label class="col-md-2 control-label">' + criteria + '</label><input type="range" defaultValue="1" min="1" max="' + $scope.event.max_scale + '" step="1">';
-
-                var temp = $compile(el)($scope);
-                angular.element(document.querySelector("#criteria")).append(temp);
+            EventService.getEvent(evt_code).then(function(res) {
+                $rootScope.event = res.data.event;
+            }, function(res) {
+                $rootScope.stopAndReport(res.data);
             });
-
-            //Diplay Location
-            //Team/Project Name
-            //Criteria w Radio Buttons
-
-            //Comment Box
-        }*/
+        }
     }
 ])
 .controller('EventCtrl', ['$scope', '$rootScope', '$compile', '$location', 'UserService', 'EventService', 'EmailService', 'USER_ROLES',
@@ -469,6 +462,8 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
 
                 if ($rootScope.currentUserData.user.user_role.indexOf(USER_ROLES.evt_admin) < 0)
                     $rootScope.currentUserData.user.user_role.push(USER_ROLES.evt_admin);
+
+                $rootScope.currentUserData.user.events_hosting.push(event.evt_id);
 
                 UserService.updateUser($rootScope.currentUserData.user).then(function(res) {
                     alert('Your event was added at ' + res.data.timestamp);

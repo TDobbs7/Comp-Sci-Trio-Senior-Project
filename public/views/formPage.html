@@ -1,4 +1,4 @@
-<div class="panel-body">
+<div class="panel-body" data-ng-init="populateForm()">
     <form class="form">
         <div class="form-group">
             <label class="col-md-2 control-label">Event Name:</label>
@@ -14,9 +14,7 @@
         </div>
         <div class="form-group" id="criteria" data-ng-repeat="criterion in event.criteria">
             <label class="col-md-2 control-label">{{criterion}}</label>
-            <input type="range" max="{{event.max_scale}}
-
-            ">
+            <input type="range" max="{{event.max_scale}}">
         </div>
         <div class="form-group">
             <label class="col-md-2 control-label">Additional Comments:</label>

@@ -5,6 +5,8 @@ var UserSchema = new mongoose.Schema({
     email: String,
     password: String,
     user_role: [],
+    events_hosting: [],
+    events_judging: [],
     last_login: Date
 }, {collection : 'users', discriminatorKey: 'kind', versionKey : false});
 
