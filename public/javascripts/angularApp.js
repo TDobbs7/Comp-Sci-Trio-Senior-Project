@@ -74,7 +74,6 @@ app.config(['$routeProvider', 'USER_ROLES',
 
 app.run(function($location, $rootScope, $route, AuthenticationService, UserService, EmailService) {
     $rootScope.location = $location;
-    $rootScope.route = $route.routes[$rootScope.location.path()];
     $rootScope.currentUserData = JSON.parse(window.localStorage.getItem("user"));
     $rootScope.requestedPerson = JSON.parse(window.localStorage.getItem("req_person"));
     $rootScope.requestedUser = JSON.parse(window.localStorage.getItem("req_user"));
@@ -215,6 +214,14 @@ app.factory('UserService', ['$http', '$rootScope',
             return $http.get('/events').then(setEvents, handleError("No events found"));
         }
 
+        function getAllEventsHostedByUser(email) {
+            var data = {
+                "email" : email
+            };
+
+            return $http.get('/events', data).then(setEvents, handleError("No events hosted by " + email));
+        }
+
         function addEvent(event) {
             return $http.post('/events', event).then(handleSuccess, handleError("Error adding event"));
         }
@@ -338,7 +345,7 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
         }
 
         function failed(res) {
-            $rootScope.stopAndReport(res);
+            $rootScope.stopAndReport(res.data);
         }
 
         $scope.register = function(user) {
@@ -357,8 +364,6 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
 ])
 .controller('JudgeCtrl', ['$scope', '$rootScope', '$location', 'EventService', 'UserService', 'USER_ROLES',
     function($scope, $rootScope, $location, EventService, UserService, USER_ROLES) {
-        $scope.event = {};
-
         $scope.verifyEventCode = function(code) {
             var credentials = {
                 email: $rootScope.currentUserData.user.email,
@@ -366,60 +371,62 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
             };
 
             EventService.verifyEventCode(credentials).then(function(res) {
-                $scope.event = res.data.event;
+                $rootScope.event = res.data.event;
 
-                $rootScope.currentUserData.user.user_role.append(USER_ROLES.judge);
+                if ($rootScope.currentUserData.user.user_role.indexOf(USER_ROLES.judge) < 0) {
+                    $rootScope.currentUserData.user.user_role.push(USER_ROLES.judge);
 
-                UserService.UpdateUser($rootScope.currentUserData.user).then(function(res) {
-                    alert("You can now judge this event: " + $scope.event.name);
-                    $location.path('/judge/event_form');
-                }, function(res) {
-                    $rootScope.stopAndReport(res);
-                });
+                    UserService.UpdateUser($rootScope.currentUserData.user).then(function(res) {
+                    }, function(res) {
+                        $rootScope.stopAndReport(res.data);
+                    });
+                }
+
+                alert("You can now judge this event: " + $scope.event.name);
+                $location.path('/judge/event_form');
+
             }, function(res) {
-                $rootScope.stopAndReport(res);
+                $rootScope.stopAndReport(res.data);
             });
         }
 
         $scope.populateForm = function() {
+            console.log($rootScope.event);
+        }
+
+        /*$scope.populateForm = function() {
             /*var el = document.createElement('div');
             el.setAttribute('data-ng-model', "event.name");
             el.setAttribute('class', 'form-group');
             el.innerHTML = '<input type="text" data-ng-model="event.name"  readonly>'
-
             var temp = $compile(el)($scope);
             angular.element(document.querySelector('#judges')).append(temp);*/
 
-            $scope.event.criteria.forEach(function(criteria, index) {
+            /*$scope.event.criteria.forEach(function(criteria, index) {
                 var el = document.createElement('div');
                 el.setAttribute('id', 'crit-' + (index+1));
                 el.innerHTML = '<label class="col-md-2 control-label">' + criteria + '</label><input type="range" defaultValue="1" min="1" max="' + $scope.event.max_scale + '" step="1">';
-
                 var temp = $compile(el)($scope);
                 angular.element(document.querySelector("#criteria")).append(temp);
             });
-
             //Diplay Location
             //Team/Project Name
             //Criteria w Radio Buttons
-
             //Comment Box
-        }
+        }*/
     }
 ])
-.controller('EventCtrl', ['$scope', '$rootScope', '$compile', '$location', 'UserService', 'EventService', 'EmailService',
-    function($scope, $rootScope, $compile, $location, UserService, EventService, EmailService) {
-        $scope.event = {};
+.controller('EventCtrl', ['$scope', '$rootScope', '$compile', '$location', 'UserService', 'EventService', 'EmailService', 'USER_ROLES',
+    function($scope, $rootScope, $compile, $location, UserService, EventService, EmailService, USER_ROLES) {
         $scope.number_of_judges = 1;
         $scope.number_of_criteria = 1;
 
         $scope.addEvent = function(event) {
             event.judges = [];
+            event.criteria = [];
 
             event.evt_id = Math.random().toString(36).substring(2, 9);
-            event.event_host = $rootScope.currentUserData.user.name;
-
-            //Get file that was chosen
+            event.event_host = $rootScope.currentUserData.user.email;
 
             var judgesHTML = $('#judges')[0].children;
 
@@ -431,6 +438,16 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
 
                 event.judges.push(judge);
             }
+
+            var criteriaHTML = $('#jcrit')[0].children;
+
+            for (var i = 0; i < criteriaHTML.length; i++) {
+                var criterion = criteriaHTML[i].children.criterion.value;
+
+                event.criteria.push(criterion);
+            }
+
+            event.max_scale = $('input[name="tblebttn"]:checked').val();
 
             EventService.addEvent(event).then(function(res) {
                 var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -446,16 +463,17 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
                               "hearing from you soon.\n\nThank you,\n\nScored! Administration";
                 $rootScope.sendEmail("contactus.scored@gmail.com", event.judges, "Judging!", message);
 
-                $rootScope.currentUserData.user.user_role.append(USER_ROLES.evt_admin);
+                if ($rootScope.currentUserData.user.user_role.indexOf(USER_ROLES.evt_admin) < 0)
+                    $rootScope.currentUserData.user.user_role.push(USER_ROLES.evt_admin);
 
                 UserService.updateUser($rootScope.currentUserData.user).then(function(res) {
                     alert('Your event was added at ' + res.data.timestamp);
                     $location.path('/home');
                 }, function(res) {
-                    $rootScope.stopAndReport(res);
+                    $rootScope.stopAndReport(res.data);
                 });
             }, function(res){
-                $rootScope.stopAndReport(res);
+                $rootScope.stopAndReport(res.data);
             });
         }
 
@@ -507,7 +525,7 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
             var divIDName = 'jcrit-' + $scope.number_of_criteria;
             el.setAttribute('id', divIDName);
             el.setAttribute('class', 'form-group');
-            el.innerHTML = '<button data-ng-click="removeCriteria($event,' + $scope.number_of_criteria + ');" class="btn btn-info">-</button> <input type="text" placeholder="Criteria" name="criteria" class="input" required>';
+            el.innerHTML = '<button data-ng-click="removeCriteria($event,' + $scope.number_of_criteria + ');" class="btn btn-info">-</button> <input type="text" placeholder="Criteria" name="criterion" class="input" required>';
 
             var temp = $compile(el)($scope);
             angular.element(document.querySelector('#jcrit')).append(temp);
@@ -522,5 +540,17 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
             var delDiv = document.getElementById('jcrit-' + num);
             j.removeChild(delDiv);
         }
+
+        $scope.checkDate = function(startDate,endDate) {
+            $scope.errMessage = '';
+            var curDate = new Date();
+
+            if(new Date(startDate) > new Date(endDate)){
+               alert ("End date should not be before Start Date.");
+            }
+            if(new Date(startDate) < curDate){
+               alert ("Start date should not be before today.");
+            }
+        };
     }
 ]);

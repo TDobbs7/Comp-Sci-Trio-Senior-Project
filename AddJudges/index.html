@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Event Details</title>
+    <link href="./bootstrap-theme.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="./jqueryscripttop.css">
+    <link rel="stylesheet" type="text/css" href="./style.css">
+
+   <link href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet">
+    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/jquery.bootstrapvalidator/0.5.3/css/bootstrapValidator.min.css"/>
+    <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/jquery.bootstrapvalidator/0.5.3/js/bootstrapValidator.min.js"> </script>
+    <link rel="stylesheet" type="text/css" href="AddJudges/jqueryscripttop.css">
+   <style>
+       h2,strong {font-family: sans-serif; font-size: 16px; text-align:left; padding-left: 0em}
+
+    * {padding-left: 1em; font-family: sans-serif; font-size: 14px; color: #ffffff}
+
+       [placeholder="MM/DD/YYYY"] {color:#000000}
+
+       input {color: #000000}
+
+       h1  {text-align: center; color: #ffffff}
+
+       [value="Send Email"] {align: center}
+
+    h2 { padding-left: 1em; text-align: left; font-size: 110%; color: #ffffff}
+    body{
+        /* Safari 4-5, Chrome 1-9 */
+        /*background: -webkit-gradient(radial, center center, 0, center center, 460, from(#1a82f7), to(#2F2727));*/
+
+        /* Safari 5.1+, Chrome 10+ */
+        background: -webkit-radial-gradient(circle, #1a82f7, #2F2727);
+
+        /* Firefox 3.6+ */
+        background: -moz-radial-gradient(circle, #1a82f7, #2F2727);
+
+        /* IE 10 */
+        background: -ms-radial-gradient(circle, #1a82f7, #2F2727);
+        height:600px;
+    }
+
+    .centered-form{
+        margin-top: 60px;
+    }
+
+    .centered-form .panel{
+        background: rgba(255, 255, 255, 0.8);
+        box-shadow: rgba(0, 0, 0, 0.3) 20px 20px 20px;
+    }
+
+    label.label-floatlabel {
+        font-weight: bold;
+        color: blueviolet;
+        font-size: 11px;
+    }
+
+    label {
+        font-size: 16px; font-family: sans-serif;
+    }
+.error {
+  color: red;
+}
+
+</style>
+
+  <h1> Event Details </h1>
+    <br>
+</head>
+<body onload="myFunction()" >
+
+<form id="contactForm" method="post" action="mailto:youremail@youremail.com" enctype="text/plain">
+<div class="form-group">
+    <label class="col-md-2 control-label">Event Name:</label>
+    <input type="text" placeholder="Event name" name="ename" class="input" required>
+</div>
+<div class="form-group">
+<label class="col-md-2 control-label">Event Host Email: </label>
+<input type="email" placeholder="youremail@email.com" name="ehemail" class="input" required>
+</div>
+    <div class="form-group">
+        <label class="col-md-2 control-label"> Start Date:</label>
+        <input type="date" placeholder="MM/DD/YYYY" name="sdate" class="input" required>
+    </div>
+    <div class="form-group">
+        <label class="col-md-2 control-label">End Date: </label>
+        <input type="date" placeholder="MM/DD/YYYY" name="edate" class="input" required>
+    </div>
+
+  <h2 class="form-group"> <strong> Enter Full Name and Email of Judges </strong> </h2>
+  <div class="form-group" data-duplicate="info" data-duplicate-min="0">
+      <button data-duplicate-add="info" class="button">+</button>
+    <input type="text" placeholder="full name" name="fname" class="input" required>
+      <input type="email" placeholder="youremail@email.com" name="email1" class="input" required>
+  </div>
+<div data-duplicate="info">
+  <button data-duplicate-remove="info" class="minusbttn">-</button>
+  <input type="text" placeholder="full name" name="fname2" class="input">
+  <input type="email" placeholder="youremail@email.com" name="email2" class="input">
+</div>
+    <input type="hidden" name="message" value=" dummy message">
+      <br>
+      <h2> <strong>Select one or more files for your detailed Rubric Criteria </strong>  </h2>
+    <input type="file" id="myFile" multiple size="50" onchange="myFunction()" required>
+    <br>
+    <p><strong>Tip:</strong> Use the Control or the Shift key to select multiple files.</p>
+    <p id="demo"></p>
+      <br>
+    <button type="submit" value="Send Email" name="mySubmit" class="button">Submit</button>
+</form>
+
+  <?php
+    $clicked = "not_clicked";
+    if ($_POST) {
+        if (isset($_POST['contactform']) && isset($_POST['mySubmit'])) {
+            $clicked = "clicked";
+            var_dump($_POST); // dumps your $_POST array.
+        }
+    }
+
+    $name = $_POST['ename'];
+    $visitor_email = $_POST['ehemail'];
+    $message = $_POST['message'];
+
+     if(IsInjected($visitor_email))
+    {
+    echo "Bad email value!";
+    exit;
+    }
+
+    $email_from = 'contactus.scored@gmail.com';//<== update the email address
+    $email_subject = "We would like you to Judge!";
+    $email_body = "You have received a new message from the user $name.\n".
+    "Here is the message:\n $message".
+
+    $to = '$_GET["name"]';//<== update the email address
+    $headers = "From: $email_from \r\n";
+    $headers .= "Reply-To: $visitor_email \r\n";
+    //Send the email!
+    mail($to,$email_subject,$email_body,$headers);
+    //done. redirect to thank-you page.
+    header('Location: index.html');
+
+
+    // Function to validate against any email injection attempts
+    function IsInjected($str)
+    {
+     $injections = array('(\n+)',
+              '(\r+)',
+              '(\t+)',
+              '(%0A+)',
+              '(%0D+)',
+              '(%08+)',
+              '(%09+)'
+              );
+    $inject = join('|', $injections);
+     $inject = "/$inject/i";
+    if(preg_match($inject,$str))
+        {
+     return true;
+    }
+    else
+    {
+    return false;
+    }
+    }
+
+    ?>
+
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<script src="jquery.duplicate.js"></script>
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-36251023-1']);
+  _gaq.push(['_setDomainName', 'jqueryscript.net']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+    // not needed, just an example of listening to events triggered by the plugin
+    $('body').on('duplicate.error', function(ev){
+      console.log('refused to add/remove', this);
+      $(ev.target).addClass('error');
+      setTimeout(function(){
+        $(ev.target).removeClass('error');
+      }, 1500);
+    });
+
+    function myFunction(){
+    var txt = "";
+    var x = document.getElementById("myFile");
+    if ('files' in x) {
+        if (x.files.length == 0) {
+            txt = "";
+        } else {
+            for (var i = 0; i < x.files.length; i++) {
+                txt += "<br><strong>" + (i+1) + ".File </strong><br>";
+                var file = x.files[i];
+                if ('name' in file) {
+                    txt += "name: " + file.name + "<br>";
+                }
+                if ('size' in file) {
+                    txt += "size: " + file.size + " bytes <br>";
+                }
+            }
+        }
+    }
+    else {
+        if (x.value == "") {
+            txt += "Select one or more files.";
+        } else {
+            txt += "The files property is not supported by your browser!";
+            txt  += "<br>The path of the selected file: " + x.value; // If the browser does not support the files property, it will return the path of the selected file instead.
+        }
+    }
+    document.getElementById("demo").innerHTML = txt;
+}
+
+</script>
+
+</body>
+</html>
