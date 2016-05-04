@@ -10,7 +10,7 @@ var EventSchema = new mongoose.Schema({
     judges: [],
     criteria: [],
     max_scale: Number,
-    winner: String
+    scores: []
 }, { collection : 'events', versionKey : false });
 
 mongoose.model('Event', EventSchema);

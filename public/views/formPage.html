@@ -1,5 +1,5 @@
 <div class="panel-body">
-    <form data-ng-init="populateForm()">
+    <form class="form">
         <div class="form-group">
             <label class="col-md-2 control-label">Event Name:</label>
             <input type="text" data-ng-model="event.name" readonly>
@@ -12,9 +12,11 @@
             <label class="col-md-2 control-label">Team/Project Name:</label>
             <input type="text" placeholder="Team/Project Name" data-ng-model="judge_form.team" required>
         </div>
+        <div class="form-group" id="criteria" data-ng-repeat="criterion in event.criteria">
+            <label class="col-md-2 control-label">{{criterion}}</label>
+            <input type="range" max="{{event.max_scale}}
 
-        <div class="form-group" id="criteria">
-
+            ">
         </div>
         <div class="form-group">
             <label class="col-md-2 control-label">Additional Comments:</label>

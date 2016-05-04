@@ -37,7 +37,7 @@
                 <div id="jcrit">
                     <div id="jcrit-1" class="form-group">
                         <button data-ng-click="addCriteria($event);" class="btn btn-primary">+</button>
-                        <input type="text" placeholder="Technical Difficulty" name="criteria" class="input" required>
+                        <input type="text" placeholder="Technical Difficulty" name="criterion" class="input" required>
                     </div>
                 </div>
 
@@ -45,12 +45,18 @@
                 <br>
                 <div align="left">
                     <label><input type="radio" style="vertical-align: middle; margin: 0px" name="tblebttn" required>
-                        1-5 (5 being highest)</label>
+                        0-5 (5 being highest)</label>
                     <label><input type="radio" style="vertical-align: middle; margin: 0px" name="tblebttn">
-                        1-10 (10 being highest)</label>
+                        0-10 (10 being highest)</label>
                 </div>
                 <br>
+                <div class="line">
                 <input class="btn btn-success" type="submit" value="Submit">
+                <div class="form-group right">
+                    <a href="#/home" class="btn btn-danger btn-md form-control" role="button">Cancel</a>
+                </div>
+                </div>
+
             </form>
         </div>
     </div>
