@@ -17,14 +17,12 @@
                 </thead>
                 <tbody>
 
-                <div ng-repeat = "event in EventService.events">
-                    <tr>
+                    <tr data-ng-repeat="event in EventService.events">
                         <td>{{event.name}}</td>
                         <td>{{event.location}}</td>
                         <td>{{event.start_date}}</td>
                         <td>{{event.end_date}}</td>
                     </tr>
-                </div>
 
                 </tbody>
             </table>

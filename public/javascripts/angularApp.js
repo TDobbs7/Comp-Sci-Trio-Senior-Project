@@ -214,6 +214,14 @@ app.factory('UserService', ['$http', '$rootScope',
             return $http.get('/events').then(setEvents, handleError("No events found"));
         }
 
+        function getAllEventsHostedByUser(email) {
+            var data = {
+                "email" : email
+            };
+
+            return $http.get('/events', data).then(setEvents, handleError("No events hosted by " + email));
+        }
+
         function addEvent(event) {
             return $http.post('/events', event).then(handleSuccess, handleError("Error adding event"));
         }
@@ -408,7 +416,6 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
 ])
 .controller('EventCtrl', ['$scope', '$rootScope', '$compile', '$location', 'UserService', 'EventService', 'EmailService',
     function($scope, $rootScope, $compile, $location, UserService, EventService, EmailService) {
-        $scope.event = {};
         $scope.number_of_judges = 1;
         $scope.number_of_criteria = 1;
 
@@ -417,7 +424,7 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
             event.criteria = [];
 
             event.evt_id = Math.random().toString(36).substring(2, 9);
-            event.event_host = $rootScope.currentUserData.user.name;
+            event.event_host = $rootScope.currentUserData.user.email;
 
             var judgesHTML = $('#judges')[0].children;
 

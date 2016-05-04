@@ -6,21 +6,21 @@ var User = mongoose.model('User');
 
 /* GET users listing. */
 router.get('/', function(req, res, next) {
-  User.find(function(err, users) {
-    if (err) return next(err);
+    User.find(function(err, users) {
+        if (err) return next(err);
 
-    if (!users) res.status(404).json({"success" : "false", "message" : "No users found"});
-    else res.json({"users" :users, "timestamp" : new Date(new Date().getTime())});
-  });
+        if (!users) res.status(404).json({"success" : "false", "message" : "No users found"});
+        else res.json({"users" :users, "timestamp" : new Date(new Date().getTime())});
+    });
 });
 
 router.get('/:email', function(req, res, next) {
-  User.findOne({"email" : req.params.email}, function(err, user) {
-    if (err) return next(err);
+    User.findOne({"email" : req.params.email}, function(err, user) {
+        if (err) return next(err);
 
-    if (!user) res.status(404).json({'message' :"User with Email " + req.params.email + " not found"});
-    else res.json({"user" : user, "timestamp" : new Date(new Date().getTime())});
-  });
+        if (!user) res.status(404).json({'message' :"User with Email " + req.params.email + " not found"});
+        else res.json({"user" : user, "timestamp" : new Date(new Date().getTime())});
+    });
 });
 
 router.post('/', function(req, res, next) {
@@ -64,22 +64,22 @@ router.post('/login', function(req, res, next) {
 });
 
 router.put('/:email', function(req, res, next) {
-  var aUser = new User(req.body);
+    var aUser = new User(req.body);
 
-  User.findOne({"email" : req.params.email}, function(err, user) {
-    if (err) return next(err);
-    if (!user) res.status(404).json({"message" : "User " + req.params.email + " can't be updated at this time"});
+    User.findOne({"email" : req.params.email}, function(err, user) {
+        if (err) return next(err);
+        if (!user) res.status(404).json({"message" : "User " + req.params.email + " can't be updated at this time"});
 
-    else {
-        aUser._id = user._id;
+        else {
+            aUser._id = user._id;
 
-        User.update({'email' : req.params.email}, aUser, {'upsert' : true}, function(err2) {
-            if (err2) return next(err2);
+            User.update({'email' : req.params.email}, aUser, {'upsert' : true}, function(err2) {
+                if (err2) return next(err2);
 
-            res.json({"timestamp" : new Date(new Date().getTime()).toUTCString()});
-        });
-    }
-  });
+                res.json({"timestamp" : new Date(new Date().getTime()).toUTCString()});
+            });
+        }
+    });
 });
 
 module.exports = router;

@@ -14,6 +14,14 @@ router.get('/', function(req, res, next) {
     });
 });
 
+router.get('/', function(req, res, next) {
+    var email = req.body.email;
+
+    Event.find({}, function(err, events) {
+        if (err) return
+    });
+});
+
 router.get('/:evt_id', function(req, res, next) {
     Event.findOne({"evt_id" : req.params.evt_id}, function(err, event) {
         if (err) return next(err);
