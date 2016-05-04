@@ -38,13 +38,6 @@ app.config(['$routeProvider', 'USER_ROLES',
                 good_roles: [USER_ROLES.evt_admin, USER_ROLES.sys_admin],
                 css: '/stylesheets/gradient.css'
             }).
-             when('/viewEvent', {
-                 templateUrl: '/views/viewEventsHTML.html',
-                 controller: 'EventCtrl',
-                 require_login: true,
-                 good_roles: [USER_ROLES.evt_admin, USER_ROLES.sys_admin],
-                 css: '/stylesheets/gradient.css'
-             }).
             when('/contact_us', {
                 templateUrl: '/views/contactUsHTML.html',
                 controller: 'UserCtrl',
@@ -58,6 +51,20 @@ app.config(['$routeProvider', 'USER_ROLES',
                 require_login: false,
                 good_roles: [USER_ROLES.regular, USER_ROLES.judge, USER_ROLES.evt_admin, USER_ROLES.sys_admin],
                 css: '/stylesheets/aboutPageCSS.css'
+            }).
+            when('/judge/event_form', {
+                templateUrl: '/views/formPage.html',
+                controller: 'JudgeCtrl',
+                require_login: true,
+                good_roles: [USER_ROLES.judge, USER_ROLES.sys_admin],
+                css: '/stylesheets/gradient.css'
+            }).
+            when('/viewEvents', {
+                templateUrl: '/views/viewEventsHTML.html',
+                controller: 'EventCtrl',
+                require_login: true,
+                good_roles: [USER_ROLES.regular, USER_ROLES.judge, USER_ROLES.evt_admin, USER_ROLES.sys_admin],
+                css: '/stylesheets/gradient.css'
             }).
             otherwise({
                 redirectTo: '/'
@@ -193,14 +200,26 @@ app.factory('UserService', ['$http', '$rootScope',
         var service = {};
 
         service.addEvent = addEvent;
+        service.getAllEvents = getAllEvents;
         service.editEvent = editEvent;
         service.removeEvent = removeEvent;
         service.verifyEventCode = verifyEventCode;
+        service.getEvent = getEvent;
+
+        service.events = [];
 
         return service;
 
+        function getAllEvents() {
+            return $http.get('/events').then(setEvents, handleError("No events found"));
+        }
+
         function addEvent(event) {
             return $http.post('/events', event).then(handleSuccess, handleError("Error adding event"));
+        }
+
+        function getEvent(evt_id) {
+            return $http.get('/events/' + evt_id).then(handleSuccess, handleError("Event does not exist"));
         }
 
         function editEvent(event) {
@@ -213,6 +232,11 @@ app.factory('UserService', ['$http', '$rootScope',
 
         function verifyEventCode(credentials) {
             return $http.post('/events/verify', credentials).then(handleSuccess, handleError("Invalid event code"));
+        }
+
+        function setEvents(res) {
+            $scope.events = res.data.events;
+            handleSuccess(res);
         }
 
         function handleSuccess(res) {
@@ -262,7 +286,12 @@ app.factory('UserService', ['$http', '$rootScope',
         }
 
         function isAuthorized(good_roles) {
-            return (good_roles.indexOf($rootScope.currentUserData.user.user_role) !== -1);
+            //return (good_roles.indexOf($rootScope.currentUserData.user.user_role) !== -1);
+            for(var index in $rootScope.currentUserData.user.user_role) {
+                if (good_roles.indexOf($rootScope.currentUserData.user.user_role[index]) !== -1) return true;
+            }
+
+            return false;
         }
 
         function handleSuccess(res) {
@@ -308,7 +337,7 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
         }
 
         function failed(res) {
-            $rootScope.stopAndReport(res.data);
+            $rootScope.stopAndReport(res);
         }
 
         $scope.register = function(user) {
@@ -325,8 +354,10 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
         }
     }
 ])
-.controller('JudgeCtrl', ['$scope', '$rootScope', '$location', 'EventService',
-    function($scope, $rootScope, $location, EventService) {
+.controller('JudgeCtrl', ['$scope', '$rootScope', '$location', 'EventService', 'UserService', 'USER_ROLES',
+    function($scope, $rootScope, $location, EventService, UserService, USER_ROLES) {
+        $scope.event = {};
+
         $scope.verifyEventCode = function(code) {
             var credentials = {
                 email: $rootScope.currentUserData.user.email,
@@ -334,17 +365,49 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
             };
 
             EventService.verifyEventCode(credentials).then(function(res) {
-                alert("You can now judge this event: " + res.data.event.name);
-                $location.path('/home');
+                $scope.event = res.data.event;
+
+                $rootScope.currentUserData.user.user_role.append(USER_ROLES.judge);
+
+                UserService.UpdateUser($rootScope.currentUserData.user).then(function(res) {
+                    alert("You can now judge this event: " + $scope.event.name);
+                    $location.path('/judge/event_form');
+                }, function(res) {
+                    $rootScope.stopAndReport(res);
+                });
             }, function(res) {
-                $rootScope.stopAndReport(res.data);
+                $rootScope.stopAndReport(res);
             });
+        }
+
+        $scope.populateForm = function() {
+            /*var el = document.createElement('div');
+            el.setAttribute('data-ng-model', "event.name");
+            el.setAttribute('class', 'form-group');
+            el.innerHTML = '<input type="text" data-ng-model="event.name"  readonly>'
+
+            var temp = $compile(el)($scope);
+            angular.element(document.querySelector('#judges')).append(temp);*/
+
+            $scope.event.criteria.forEach(function(criteria, index) {
+                var el = document.createElement('div');
+                el.setAttribute('id', 'crit-' + (index+1));
+                el.innerHTML = '<label class="col-md-2 control-label">' + criteria + '</label><input type="range" defaultValue="1" min="1" max="' + $scope.event.max_scale + '" step="1">';
+
+                var temp = $compile(el)($scope);
+                angular.element(document.querySelector("#criteria")).append(temp);
+            });
+
+            //Diplay Location
+            //Team/Project Name
+            //Criteria w Radio Buttons
+
+            //Comment Box
         }
     }
 ])
-
-.controller('EventCtrl', ['$scope', '$rootScope', '$compile', '$location', 'EventService', 'EmailService',
-    function($scope, $rootScope, $compile, $location, EventService, EmailService) {
+.controller('EventCtrl', ['$scope', '$rootScope', '$compile', '$location', 'UserService', 'EventService', 'EmailService',
+    function($scope, $rootScope, $compile, $location, UserService, EventService, EmailService) {
         $scope.event = {};
         $scope.number_of_judges = 1;
         $scope.number_of_criteria = 1;
@@ -381,10 +444,17 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
                               "Event Code: " + event.evt_id + "\n\nAlso, attached is a criteria page. We look forward to " +
                               "hearing from you soon.\n\nThank you,\n\nScored! Administration";
                 $rootScope.sendEmail("contactus.scored@gmail.com", event.judges, "Judging!", message);
-                alert('Your event was added at ' + res.data.timestamp);
-                $location.path('/home');
+
+                $rootScope.currentUserData.user.user_role.append(USER_ROLES.evt_admin);
+
+                UserService.updateUser($rootScope.currentUserData.user).then(function(res) {
+                    alert('Your event was added at ' + res.data.timestamp);
+                    $location.path('/home');
+                }, function(res) {
+                    $rootScope.stopAndReport(res);
+                });
             }, function(res){
-                $rootScope.stopAndReport(res.data);
+                $rootScope.stopAndReport(res);
             });
         }
 
@@ -436,7 +506,7 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
             var divIDName = 'jcrit-' + $scope.number_of_criteria;
             el.setAttribute('id', divIDName);
             el.setAttribute('class', 'form-group');
-            el.innerHTML = '<button data-ng-click="removeCriteria($event,' + $scope.number_of_criteria + ');" class="btn btn-info">-</button> <input type="text" placeholder="Criteria" name="criteria" class="input" required>';
+            el.innerHTML = '<button data-ng-click="removeCriteria($event,' + $scope.number_of_criteria + ');" class="btn btn-info">-</button> <input type="text" placeholder="Technical Difficulty" name="criteria" class="input" required>';
 
             var temp = $compile(el)($scope);
             angular.element(document.querySelector('#jcrit')).append(temp);
@@ -452,5 +522,16 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
             j.removeChild(delDiv);
         }
 
+        $scope.checkDate = function(startDate,endDate) {
+            $scope.errMessage = '';
+            var curDate = new Date();
+
+            if(new Date(startDate) > new Date(endDate)){
+               alert ("End date should not be before Start Date.");
+            }
+            if(new Date(startDate) < curDate){
+               alert ("Start date should not be before today.");
+            }
+        };
     }
 ]);
