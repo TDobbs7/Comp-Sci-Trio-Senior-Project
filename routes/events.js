@@ -75,7 +75,37 @@ router.put('/:email', function(req, res, next) {
             User.update({'email' : req.params.email}, aUser, {'upsert' : true}, function(err2) {
                 if (err2) return next(err2);
 
-                res.send({"timestamp" : new Date(new Date().getTime()).toUTCString()});
+                res.json({"timestamp" : new Date(new Date().getTime()).toLocaleString()});
+            });
+        }
+    });
+});
+
+router.put('/score/:evt_id', function(req, res, next) {
+    var score_doc = req.body.score_doc;
+
+    Event.findOne({"evt_id" : req.params.evt_id}, function(err, event) {
+        if (err) return next(err);
+
+        if (!event) res.status(404).json({"message" : "Event not found"});
+        else {
+            var name = score_doc.team_name;
+            var index = event.scores.length;
+
+            if (event.scores.indexOf(name) < 0)
+                event.scores.push({"team_name": name, "scores" : []});
+            else index = event.scores.indexOf(name);
+
+            //console.log(event);
+            delete score_doc.team_name;
+
+            //console.log(event.scores[index]);
+            event.scores[index].scores.push(score_doc);
+
+            Event.update({'evt_id' : event.evt_id}, event, {'upsert' : true}, function(err2) {
+                if (err2) return next(err2);
+
+                res.json({"timestamp" : new Date(new Date().getTime()).toLocaleString()});
             });
         }
     });

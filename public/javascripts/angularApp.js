@@ -35,7 +35,7 @@ app.config(['$routeProvider', 'USER_ROLES',
                 templateUrl: '/views/event_page.html',
                 controller: 'EventCtrl',
                 require_login: true,
-                good_roles: [USER_ROLES.evt_admin, USER_ROLES.sys_admin],
+                good_roles: [USER_ROLES.regular, USER_ROLES.judge, USER_ROLES.evt_admin, USER_ROLES.sys_admin],
                 css: '/stylesheets/gradient.css'
             }).
             when('/contact_us', {
@@ -130,6 +130,11 @@ app.run(function($location, $rootScope, $route, AuthenticationService, UserServi
           event.preventDefault();
           $location.path('/home');
         }
+
+        if (next_path != '/judge/event_form' && window.localStorage.getItem("current_evt_code") != null) {
+            window.localStorage.removeItem("current_evt_code");
+        }
+
         if (next_route && next_route.require_login) {
           if(!AuthenticationService.isAuthenticated()) {
             $rootScope.stopAndReport({'message' : "You must be logged in first"});
@@ -205,8 +210,7 @@ app.factory('UserService', ['$http', '$rootScope',
         service.removeEvent = removeEvent;
         service.verifyEventCode = verifyEventCode;
         service.getEvent = getEvent;
-
-        service.events = [];
+        service.addScoreForm = addScoreForm;
 
         return service;
 
@@ -214,13 +218,13 @@ app.factory('UserService', ['$http', '$rootScope',
             return $http.get('/events').then(setEvents, handleError("No events found"));
         }
 
-        function getAllEventsHostedByUser(email) {
+        /*function getAllEventsHostedByUser(email) {
             var data = {
                 "email" : email
             };
 
             return $http.get('/events', data).then(setEvents, handleError("No events hosted by " + email));
-        }
+        }*/
 
         function addEvent(event) {
             return $http.post('/events', event).then(handleSuccess, handleError("Error adding event"));
@@ -232,6 +236,10 @@ app.factory('UserService', ['$http', '$rootScope',
 
         function editEvent(event) {
             return $http.put('/events/' + event.evt_id, event).then(handleSuccess, handleError("Error updating email"));
+        }
+
+        function addScoreForm(score_form, event) {
+            return $http.put('/events/score/' + event.evt_id, score_form).then(handleSuccess, handleError("Error adding score to event"));
         }
 
         function removeEvent(event) {
@@ -362,19 +370,44 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
         }
     }
 ])
-.controller('JudgeCtrl', ['$scope', '$rootScope', '$location', 'EventService', 'UserService', 'USER_ROLES',
-    function($scope, $rootScope, $location, EventService, UserService, USER_ROLES) {
+.controller('JudgeCtrl', ['$scope', '$rootScope', '$route', '$location', 'EventService', 'UserService', 'USER_ROLES',
+    function($scope, $rootScope, $route, $location, EventService, UserService, USER_ROLES) {
         $scope.judgeForm = {};
+        $scope.scores = [];
+        $scope.other_scores = {};
+        $scope.num_teams = 1;
 
         $scope.updateScore = function(index, criterion) {
-            //$('#crit-' + index).innerHTML = criterion + ": " + value;
-            //console.log($scope.);
-            var value = this.slider;
+            var value = this.crits[index];
             document.getElementById('crit-' +index).innerHTML = criterion + ": " + value;
+            $scope.scores[index] = parseInt(value);
+            $scope.other_scores[criterion] = parseInt(value);
         }
 
-        $scope.submitJudgeForm = function() {
+        $scope.submitJudgeForm = function(event, judgeForm) {
+            var total =0;
 
+            $scope.scores.forEach(function(err, ind) {
+                total += $scope.scores[ind];
+            });
+
+            var data = {
+                "score_doc" : {
+                        "judge_name" : $rootScope.currentUserData.user.name,
+                        "judge_email" : $rootScope.currentUserData.user.email,
+                        "team_name": judgeForm.team,
+                        "scores" : $scope.other_scores,
+                        "total_score": total
+                    }
+            };
+
+            EventService.addScoreForm(data, event).then(function(res) {
+                alert("Your scores have been submitted for " + data.score_doc.team_name +"!");
+                //$location.path('/home');
+                $route.reload();
+            }, function(res) {
+                $rootScope.stopAndReport(res.data);
+            });
         }
 
         $scope.verifyEventCode = function(code) {
@@ -475,7 +508,7 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
 
                 $rootScope.currentUserData.user.events_hosting.push(event.evt_id);
 
-                UserService.updateUser($rootScope.currentUserData.user).then(function(res) {
+                UserService.UpdateUser($rootScope.currentUserData.user).then(function(res) {
                     alert('Your event was added at ' + res.data.timestamp);
                     $location.path('/home');
                 }, function(res) {
