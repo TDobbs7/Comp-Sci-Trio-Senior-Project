@@ -35,22 +35,36 @@ app.config(['$routeProvider', 'USER_ROLES',
                 templateUrl: '/views/event_page.html',
                 controller: 'EventCtrl',
                 require_login: true,
-                good_roles: [USER_ROLES.evt_admin, USER_ROLES.sys_admin],
+                good_roles: [USER_ROLES.regular, USER_ROLES.judge, USER_ROLES.evt_admin, USER_ROLES.sys_admin],
                 css: '/stylesheets/gradient.css'
             }).
             when('/contact_us', {
                 templateUrl: '/views/contactUsHTML.html',
                 controller: 'UserCtrl',
-                require_login: true,
+                require_login: false,
                 good_roles: [USER_ROLES.regular, USER_ROLES.judge, USER_ROLES.evt_admin, USER_ROLES.sys_admin],
                 css: '/stylesheets/gradient.css'
             }).
             when('/about_us', {
                 templateUrl: '/views/aboutUsHTML.html',
                 controller: 'UserCtrl',
-                require_login: true,
+                require_login: false,
                 good_roles: [USER_ROLES.regular, USER_ROLES.judge, USER_ROLES.evt_admin, USER_ROLES.sys_admin],
                 css: '/stylesheets/aboutPageCSS.css'
+            }).
+            when('/judge/event_form', {
+                templateUrl: '/views/formPage.html',
+                controller: 'JudgeCtrl',
+                require_login: true,
+                good_roles: [USER_ROLES.judge, USER_ROLES.sys_admin],
+                css: '/stylesheets/gradient.css'
+            }).
+            when('/viewEvents', {
+                templateUrl: '/views/viewEventsHTML.html',
+                controller: 'EventCtrl',
+                require_login: true,
+                good_roles: [USER_ROLES.regular, USER_ROLES.judge, USER_ROLES.evt_admin, USER_ROLES.sys_admin],
+                css: '/stylesheets/gradient.css'
             }).
             otherwise({
                 redirectTo: '/'
@@ -58,8 +72,9 @@ app.config(['$routeProvider', 'USER_ROLES',
     }
 ]);
 
-app.run(function($location, $rootScope, $route, AuthenticationService, UserService) {
+app.run(function($location, $rootScope, $route, AuthenticationService, UserService, EmailService) {
     $rootScope.location = $location;
+    $rootScope.route = $route.routes[$location.path()]
     $rootScope.currentUserData = JSON.parse(window.localStorage.getItem("user"));
     $rootScope.requestedPerson = JSON.parse(window.localStorage.getItem("req_person"));
     $rootScope.requestedUser = JSON.parse(window.localStorage.getItem("req_user"));
@@ -71,10 +86,38 @@ app.run(function($location, $rootScope, $route, AuthenticationService, UserServi
 
             $location.path('/');
             alert("You have logged out");
+            $route.reload();
         }, function(res) {
-          $rootScope.stopAndReport(res);
+          $rootScope.stopAndReport(res.data);
         });
     };
+
+    $rootScope.sendEmail = function(sender, recs, email_subject, message) {
+        var data = {
+            'email' : {
+                from : sender,
+                recipients: recs,
+                subject: email_subject,
+                text: message
+            }
+        };
+
+        EmailService.sendEmail(data).then(
+            function(res) {
+                alert("Your email was sent!");
+                $location.path('/');
+            }, function(res) { failed(res); }
+        );
+    }
+
+    $rootScope.contactUs = function(contacter) {
+        var sender = contacter.email_addr;
+        var recipients = ["contactus.scored@gmail.com"];
+        var subject = contacter.email_subject;
+        var text = "You received a message from " + contacter.name + ". Here is the message:\n\n" + contacter.email_message;
+
+        $rootScope.sendEmail(sender, recipients, subject, text)
+    }
 
     $rootScope.stopAndReport = function(res) {
         event.preventDefault();
@@ -89,6 +132,11 @@ app.run(function($location, $rootScope, $route, AuthenticationService, UserServi
           event.preventDefault();
           $location.path('/home');
         }
+
+        if (next_path != '/judge/event_form' && window.localStorage.getItem("current_evt_code") != null) {
+            window.localStorage.removeItem("current_evt_code");
+        }
+
         if (next_route && next_route.require_login) {
           if(!AuthenticationService.isAuthenticated()) {
             $rootScope.stopAndReport({'message' : "You must be logged in first"});
@@ -101,6 +149,8 @@ app.run(function($location, $rootScope, $route, AuthenticationService, UserServi
             $location.path(next_path);
           } else $location.path(next_path);
         }
+
+        $route.reload();
     });
 });
 
@@ -146,11 +196,11 @@ app.factory('UserService', ['$http', '$rootScope',
         // private functions
 
         function handleSuccess(res) {
-            return {"success" : true, "data" : res.data};
+            return {"data" : res.data};
         }
 
         function handleError(error) {
-            return {"success" : false, "message" : error};
+            return {"message" : error};
         }
     }
 ])
@@ -159,34 +209,62 @@ app.factory('UserService', ['$http', '$rootScope',
         var service = {};
 
         service.addEvent = addEvent;
+        service.getAllEvents = getAllEvents;
         service.editEvent = editEvent;
         service.removeEvent = removeEvent;
         service.verifyEventCode = verifyEventCode;
+        service.getEvent = getEvent;
+        service.addScoreForm = addScoreForm;
 
         return service;
 
+        function getAllEvents() {
+            return $http.get('/events').then(setEvents, handleError("No events found"));
+        }
+
+        /*function getAllEventsHostedByUser(email) {
+            var data = {
+                "email" : email
+            };
+
+            return $http.get('/events', data).then(setEvents, handleError("No events hosted by " + email));
+        }*/
+
         function addEvent(event) {
             return $http.post('/events', event).then(handleSuccess, handleError("Error adding event"));
+        }
+
+        function getEvent(evt_id) {
+            return $http.get('/events/' + evt_id).then(handleSuccess, handleError("Event does not exist"));
         }
 
         function editEvent(event) {
             return $http.put('/events/' + event.evt_id, event).then(handleSuccess, handleError("Error updating email"));
         }
 
+        function addScoreForm(score_form, event) {
+            return $http.put('/events/score/' + event.evt_id, score_form).then(handleSuccess, handleError("Error adding score to event"));
+        }
+
         function removeEvent(event) {
             return $http.delete('/events/' + event.evt_id, event).then(handleSuccess, handleError("Error deleting email"));
         }
 
-        function verifyEventCode(code) {
-            return $http.post('/events/verify', code).then(handleSuccess, handleError("Invalid event code"));
+        function verifyEventCode(credentials) {
+            return $http.post('/events/verify', credentials).then(handleSuccess, handleError("Invalid event code"));
+        }
+
+        function setEvents(res) {
+            $scope.events = res.data.events;
+            handleSuccess(res);
         }
 
         function handleSuccess(res) {
-            return {"success" : true, "data" : res.data};
+            return {"data" : res.data};
         }
 
         function handleError(error) {
-            return {"success" : false, "message" : error};
+            return {"message" : error};
         }
     }
 ])
@@ -228,15 +306,20 @@ app.factory('UserService', ['$http', '$rootScope',
         }
 
         function isAuthorized(good_roles) {
-            return (good_roles.indexOf($rootScope.currentUserData.user.user_role) !== -1);
+            //return (good_roles.indexOf($rootScope.currentUserData.user.user_role) !== -1);
+            for(var index in $rootScope.currentUserData.user.user_role) {
+                if (good_roles.indexOf($rootScope.currentUserData.user.user_role[index]) !== -1) return true;
+            }
+
+            return false;
         }
 
         function handleSuccess(res) {
-            return {"success" : true, "data" : res.data};
+            return {"data" : res.data};
         }
 
         function handleError(error) {
-            return {"success" : false, "message" : error};
+            return {"message" : error};
         }
     }
 ])
@@ -253,11 +336,11 @@ app.factory('UserService', ['$http', '$rootScope',
         }
 
         function handleSuccess(res) {
-            return {"success" : true, "data" : res.data};
+            return {"data" : res.data};
         }
 
         function handleError(error) {
-            return {"success" : false, "message" : error};
+            return {"message" : error};
         }
     }
 ]);
@@ -289,46 +372,112 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
                     }, failed);
             }
         }
+    }
+])
+.controller('JudgeCtrl', ['$scope', '$rootScope', '$route', '$location', 'EventService', 'UserService', 'AuthenticationService', 'USER_ROLES',
+    function($scope, $rootScope, $route, $location, EventService, UserService, AuthenticationService, USER_ROLES) {
+        $scope.judgeForm = {};
+        $scope.scores = [];
+        $scope.other_scores = {};
+        $scope.isSubmitted = false;
 
-        $scope.sendEmail = function(email_recipients, email_subject, message) {
+        $scope.updateScore = function(index, criterion) {
+            var value = this.crits[index];
+            document.getElementById('crit-' +index).innerHTML = criterion + ": " + value;
+            $scope.scores[index] = parseInt(value);
+            $scope.other_scores[criterion] = parseInt(value);
+        }
+
+        $scope.submitJudgeForm = function(event, judgeForm) {
+            $scope.isSubmitted = true;
+            var total = 0;
+
+            $scope.scores.forEach(function(err, ind) {
+                total += $scope.scores[ind];
+            });
+
             var data = {
-                'email' : {
-                    from : 'contactus.scored@gmail.com',
-                    recipients: email_recipients,
-                    subject: email_subject,
-                    text: message
-                }
+                "score_doc" : {
+                        "judge_name" : $rootScope.currentUserData.user.name,
+                        "judge_email" : $rootScope.currentUserData.user.email,
+                        "team_name": judgeForm.team,
+                        "scores" : $scope.other_scores,
+                        "total_score": total
+                    }
             };
 
-            EmailService.sendEmail(data).then(
-                function(res) {
-                    //alert("Email sent successfully to " + data.email.to + " at " + res.data.timestamp);
-                    //$location.path('/home');
-                }, failed
-            );
+            EventService.addScoreForm(data, event).then(function(res) {
+                alert("Your scores have been submitted for " + data.score_doc.team_name +"!");
+                //$location.path('/home');
+                $route.reload();
+            }, function(res) {
+                $rootScope.stopAndReport(res.data);
+            });
+        }
 
-        }
-    }
-])
-.controller('JudgeCtrl', ['$scope', 'EventService',
-    function($scope, EventService) {
         $scope.verifyEventCode = function(code) {
-            //EventService.
+            var credentials = {
+                email: $rootScope.currentUserData.user.email,
+                evt_code: code
+            };
+
+            EventService.verifyEventCode(credentials).then(function(res) {
+                window.localStorage.setItem("current_evt_code", JSON.stringify(res.data.event.evt_id));
+
+                var changed = false;
+                if ($rootScope.currentUserData.user.user_role.indexOf(USER_ROLES.judge) < 0) {
+                    $rootScope.currentUserData.user.user_role.push(USER_ROLES.judge);
+                    changed = true;
+                }
+
+                if ($rootScope.currentUserData.user.events_judging.indexOf(res.data.event.evt_id) < 0) {
+                    $rootScope.currentUserData.user.events_judging.push(res.data.event.evt_id);
+                    changed = true;
+                }
+
+                if (changed) {
+                    AuthenticationService.setCurrentUser($rootScope.currentUserData).then(function(res) {
+                        UserService.UpdateUser($rootScope.currentUserData.user).then(function(res) {
+                        }, function(res) {
+                            $rootScope.stopAndReport(res.data);
+                        });
+                    }, function(res) {
+                       $rootScope.stopAndReport(res.data);
+                    });
+                }
+
+                alert("You can now judge this event: " + res.data.event.name);
+                $location.path('/judge/event_form');
+
+            }, function(res) {
+                $rootScope.stopAndReport(res.data);
+            });
+        }
+
+        $scope.populateForm = function() {
+            var evt_code = JSON.parse(window.localStorage.getItem("current_evt_code"));
+
+            EventService.getEvent(evt_code).then(function(res) {
+                $rootScope.event = res.data.event;
+            }, function(res) {
+                $rootScope.stopAndReport(res.data);
+            });
         }
     }
 ])
-.controller('EventCtrl', ['$scope', '$rootScope', '$compile', '$location', 'EventService', 'EmailService',
-    function($scope, $rootScope, $compile, $location, EventService, EmailService) {
-        $scope.event = {};
+.controller('EventCtrl', ['$scope', '$rootScope', '$compile', '$location', 'UserService', 'EventService', 'EmailService', 'USER_ROLES',
+    function($scope, $rootScope, $compile, $location, UserService, EventService, EmailService, USER_ROLES) {
         $scope.number_of_judges = 1;
+        $scope.number_of_criteria = 1;
+        $scope.isSubmitted = false;
 
         $scope.addEvent = function(event) {
+            $scope.isSubmitted = true;
             event.judges = [];
+            event.criteria = [];
 
             event.evt_id = Math.random().toString(36).substring(2, 9);
-            event.event_host = $rootScope.currentUserData.user.name;
-
-            //Get file that was chosen
+            event.event_host = $rootScope.currentUserData.user.email;
 
             var judgesHTML = $('#judges')[0].children;
 
@@ -341,32 +490,65 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
                 event.judges.push(judge);
             }
 
+            var criteriaHTML = $('#jcrit')[0].children;
+
+            for (var i = 0; i < criteriaHTML.length; i++) {
+                var criterion = criteriaHTML[i].children.criterion.value;
+
+                event.criteria.push(criterion);
+            }
+
+            event.max_scale = $('input[name="tblebttn"]:checked').val();
+
             EventService.addEvent(event).then(function(res) {
-                $scope.sendEmail(event.judges, "Judging!");
-                alert('Your event was added at ' + res.data.timestamp);
-                $location.path('/home');
+                var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+                var message = "Hello,\n\nWe would like to invite you to join this competition, " + event.name +", as a judge" +
+                              " or as an honored guest. The contest will be held at " + event.location + " on " +
+                              months[event.start_date.getMonth()] + " " + event.start_date.getDate() + ", " +
+                              event.start_date.getFullYear() + " starting at " + formatAMPM(event.start_date) + ". We sincerely " +
+                              "hope that you are available to attend. \n\nGo to scored.ncat.edu to register. You must be " +
+                              "connected to an NCAT network in order to use the website.\n\nWhen registering for this " +
+                              "competition, please use your current destination email as the username and create a "+
+                              "password. After logging in, use the event code provided below to get to the event.\n\n" +
+                              "Event Code: " + event.evt_id + "\n\nAlso, attached is a criteria page. We look forward to " +
+                              "hearing from you soon.\n\nThank you,\n\nScored! Administration";
+                $rootScope.sendEmail("contactus.scored@gmail.com", event.judges, "Judging!", message);
+
+                var changed = false;
+                if ($rootScope.currentUserData.user.user_role.indexOf(USER_ROLES.evt_admin) < 0) {
+                    $rootScope.currentUserData.user.user_role.push(USER_ROLES.evt_admin);
+                    changed = true;
+                }
+
+                if ($rootScope.currentUserData.user.events_hosting.indexOf(res.data.event.evt_id) < 0) {
+                    $rootScope.currentUserData.user.events_hosting.push(res.data.event.evt_id);
+                    changed = true;
+                }
+
+                if (changed) {
+                    AuthenticationService.setCurrentUser($rootScope.currentUserData).then(function(res) {
+                        UserService.UpdateUser($rootScope.currentUserData.user).then(function(res) {
+                        }, function(res) {
+                            $rootScope.stopAndReport(res.data);
+                        });
+                    }, function(res) {
+                       $rootScope.stopAndReport(res.data);
+                    });
+                }
             }, function(res){
-                $rootScope.stopAndReport(res);
+                $rootScope.stopAndReport(res.data);
             });
         }
 
-        $scope.sendEmail = function(judges, email_subject, message) {
-            var data = {
-                'email' : {
-                    from : 'contactus.scored@gmail.com',
-                    recipients: judges,
-                    subject: email_subject,
-                    text: ""
-                }
-            };
-
-            EmailService.sendEmail(data).then(
-                function(res) {
-                    //alert("Email sent successfully to " + data.email.to + " at " + res.data.timestamp);
-                    //$location.path('/home');
-                }, function(res) { failed(res); }
-            );
-
+        function formatAMPM(date) {
+            var hours = date.getHours();
+            var minutes = date.getMinutes();
+            var ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12; // the hour '0' should be '12'
+            minutes = minutes < 10 ? '0'+minutes : minutes;
+            var strTime = hours + ':' + minutes + ' ' + ampm;
+            return strTime;
         }
 
         $scope.addJudge = function(evt) {
@@ -397,5 +579,42 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
         function failed(res) {
             $rootScope.stopAndReport(res.data);
         }
-}
+
+        $scope.addCriteria= function(evt){
+            evt.preventDefault();
+
+            $scope.number_of_criteria++;
+            var el = document.createElement('div');
+            var divIDName = 'jcrit-' + $scope.number_of_criteria;
+            el.setAttribute('id', divIDName);
+            el.setAttribute('class', 'form-group');
+            el.innerHTML = '<button data-ng-click="removeCriteria($event,' + $scope.number_of_criteria + ');" class="btn btn-info">-</button> <input type="text" placeholder="Criteria" name="criterion" class="input" required>';
+
+            var temp = $compile(el)($scope);
+            angular.element(document.querySelector('#jcrit')).append(temp);
+        }
+
+        $scope.removeCriteria = function(evt, num) {
+            evt.preventDefault();
+
+            $scope.number_of_criteria--;
+
+            var j = document.getElementById('jcrit');
+            var delDiv = document.getElementById('jcrit-' + num);
+            j.removeChild(delDiv);
+        }
+
+        $scope.checkDate = function(startDate,endDate) {
+            var curDate = new Date();
+
+            if(new Date(startDate) > new Date(endDate)){
+               alert ("End date should not be before Start Date.");
+               $('#end_date').val("");
+            }
+            if(new Date(startDate) < curDate){
+               alert ("Start date should not be before today.");
+               $('#start_date').val("");
+            }
+        };
+    }
 ]);

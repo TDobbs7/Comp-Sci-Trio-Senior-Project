@@ -1,47 +1,68 @@
-<div class="col-xs-12">
+<div class="container" style="width: 700px">
     <div class="panel panel-default">
         <div class="panel-heading">
             <h3 class="panel-title">Event Details Form</h3>
         </div>
 
         <div class="panel-body">
-            <form role="form" data-ng-submit="addEvent(event)">
-                <div class="form-group">
-                    <label class="col-md-2 control-label">Event Name:</label>
-                    <input type="text" placeholder="Event name" data-ng-model="event.name" class="input" required>
-                </div>
-                <div class="form-group">
-                    <label class="col-md-2 control-label">Event Location:</label>
-                    <input type="text" placeholder="Event Location" data-ng-model="event.location" class="input" required>
-                </div>
-                <div class="form-group">
-                    <label class="col-md-2 control-label">Start Date:</label>
-                    <input type="datetime-local" data-ng-model="event.start_date" class="input" required>
-                </div>
-                <div class="form-group">
-                    <label class="col-md-2 control-label">End Date: </label>
-                    <input type="datetime-local" data-ng-model="event.end_date" class="input" required>
-                </div>
+            <fieldset data-ng-disabled="isSubmitted">
+                <form role="form" data-ng-submit="addEvent(event)">
+                    <div class="form-group">
+                        <label class="col-md-2 control-label">Event Name:</label>
+                        <input type="text" placeholder="Event name" data-ng-model="event.name" class="input" required>
+                    </div> <br>
+                    <div class="form-group">
+                        <label class="col-md-2 control-label">Event Location:</label>
+                        <input type="text" placeholder="Event Location" data-ng-model="event.location" class="input" required>
+                    </div> <br>
+                    <div class="form-group">
+                        <label class="col-md-2 control-label">Start Date:</label>
+                        <input type="datetime-local" id="start_date" data-ng-model="event.start_date" class="input" data-ng-change='checkDate(event.start_date,event.end_date)' required>
+                    </div> <br>
+                    <div class="form-group">
+                        <label class="col-md-2 control-label">End Date:</label>
+                        <input type="datetime-local" id="end_date" data-ng-model="event.end_date" class="input" data-ng-change='checkDate(event.start_date,event.end_date)' required>
+                    </div>
+                    <h2 class="form-group panel-title"> <strong>Enter Full Name and Email of Judges</strong> </h2><br>
+                    <div id="judges">
+                        <div id="judge-1" class="form-group">
+                            <button data-ng-click="addJudge($event);" class="btn btn-primary">+</button>
+                            <input type="text" placeholder="full name" name="name" class="input">
+                            <input type="email" placeholder="youremail@email.com" name="email" class="input">
+                        </div>
+                    </div>
 
-                <h2 class="form-group panel-title"> <strong> Enter Full Name and Email of Judges </strong> </h2><br>
-                <div id="judges">
-                    <div id="judge-1" class="form-group">
-                        <button data-ng-click="addJudge($event);" class="btn btn-primary">+</button>
-                        <input type="text" placeholder="full name" name="name" class="input">
-                        <input type="email" placeholder="youremail@email.com" name="email" class="input">
+                    <h2 class="form-group panel-title"><strong>What are Areas of Performance?</strong></h2><br>
+                    <div id="jcrit">
+                        <div id="jcrit-1" class="form-group">
+                            <button data-ng-click="addCriteria($event);" class="btn btn-primary">+</button>
+                            <input type="text" placeholder="Criterion" name="criterion" class="input">
+                        </div>
+                    </div>
+
+                    <h2 class="form-group panel-title"> <strong>What is the range of these areas?</strong></h2>
+                    <div align="left">
+                        <label><input type="radio" style="vertical-align: middle; margin: 0px" name="tblebttn" value="5" required>
+                            1-5 (5 being the highest)</label>
+                        <label><input type="radio" style="vertical-align: middle; margin: 0px" name="tblebttn" value="10" required>
+                            1-10 (10 being the highest)</label>
+                    </div>
+
+                    <br>
+                    <!--<h2 class="form-group panel-title"> <strong>Select one or more files for your detailed Rubric Criteria</strong> </h2><br>
+                    <input type="file" data-ngf-select data-ng-model="event.rubric_file" data-ngf-multiple="true" size="50" required>
+                    <br>
+                    <p><strong>Tip:</strong> Use the Control or the Shift key to select multiple files.</p>
+                    <br>-->
+                <br>
+                <div class="line">
+                    <input class="btn btn-success" type="submit" value="Submit">
+                    <div class="form-group right">
+                        <a href="#/home" class="btn btn-danger btn-md form-control" role="button">Cancel</a>
                     </div>
                 </div>
-
-                <!--<input type="hidden" name="message" value=" dummy message">-->
-                <br>
-                <h2 class="form-group panel-title"> <strong>Select one or more files for your detailed Rubric Criteria</strong> </h2><br>
-                <input type="file" data-ng-model="event.rubric_file" multiple size="50" required>
-                <br>
-                <p><strong>Tip:</strong> Use the Control or the Shift key to select multiple files.</p>
-                <br>
-                <!--<button type="submit" value="Send Email" name="mySubmit" class="button">Submit</button>-->
-                <input class="btn btn-success" type="submit" value="Submit">
-            </form>
+                </form>
+            </fieldset>
         </div>
     </div>
 </div>
