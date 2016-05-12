@@ -74,6 +74,7 @@ app.config(['$routeProvider', 'USER_ROLES',
 
 app.run(function($location, $rootScope, $route, AuthenticationService, UserService, EmailService) {
     $rootScope.location = $location;
+    $rootScope.route = $route.routes[$location.path()]
     $rootScope.currentUserData = JSON.parse(window.localStorage.getItem("user"));
     $rootScope.requestedPerson = JSON.parse(window.localStorage.getItem("req_person"));
     $rootScope.requestedUser = JSON.parse(window.localStorage.getItem("req_user"));
@@ -85,6 +86,7 @@ app.run(function($location, $rootScope, $route, AuthenticationService, UserServi
 
             $location.path('/');
             alert("You have logged out");
+            $route.reload();
         }, function(res) {
           $rootScope.stopAndReport(res.data);
         });
@@ -147,6 +149,8 @@ app.run(function($location, $rootScope, $route, AuthenticationService, UserServi
             $location.path(next_path);
           } else $location.path(next_path);
         }
+
+        $route.reload();
     });
 });
 
@@ -370,12 +374,12 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
         }
     }
 ])
-.controller('JudgeCtrl', ['$scope', '$rootScope', '$route', '$location', 'EventService', 'UserService', 'USER_ROLES',
-    function($scope, $rootScope, $route, $location, EventService, UserService, USER_ROLES) {
+.controller('JudgeCtrl', ['$scope', '$rootScope', '$route', '$location', 'EventService', 'UserService', 'AuthenticationService', 'USER_ROLES',
+    function($scope, $rootScope, $route, $location, EventService, UserService, AuthenticationService, USER_ROLES) {
         $scope.judgeForm = {};
         $scope.scores = [];
         $scope.other_scores = {};
-        $scope.num_teams = 1;
+        $scope.isSubmitted = false;
 
         $scope.updateScore = function(index, criterion) {
             var value = this.crits[index];
@@ -385,7 +389,8 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
         }
 
         $scope.submitJudgeForm = function(event, judgeForm) {
-            var total =0;
+            $scope.isSubmitted = true;
+            var total = 0;
 
             $scope.scores.forEach(function(err, ind) {
                 total += $scope.scores[ind];
@@ -431,9 +436,13 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
                 }
 
                 if (changed) {
-                    UserService.UpdateUser($rootScope.currentUserData.user).then(function(res) {
+                    AuthenticationService.setCurrentUser($rootScope.currentUserData).then(function(res) {
+                        UserService.UpdateUser($rootScope.currentUserData.user).then(function(res) {
+                        }, function(res) {
+                            $rootScope.stopAndReport(res.data);
+                        });
                     }, function(res) {
-                        $rootScope.stopAndReport(res.data);
+                       $rootScope.stopAndReport(res.data);
                     });
                 }
 
@@ -460,8 +469,10 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
     function($scope, $rootScope, $compile, $location, UserService, EventService, EmailService, USER_ROLES) {
         $scope.number_of_judges = 1;
         $scope.number_of_criteria = 1;
+        $scope.isSubmitted = false;
 
         $scope.addEvent = function(event) {
+            $scope.isSubmitted = true;
             event.judges = [];
             event.criteria = [];
 
@@ -503,17 +514,27 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
                               "hearing from you soon.\n\nThank you,\n\nScored! Administration";
                 $rootScope.sendEmail("contactus.scored@gmail.com", event.judges, "Judging!", message);
 
-                if ($rootScope.currentUserData.user.user_role.indexOf(USER_ROLES.evt_admin) < 0)
+                var changed = false;
+                if ($rootScope.currentUserData.user.user_role.indexOf(USER_ROLES.evt_admin) < 0) {
                     $rootScope.currentUserData.user.user_role.push(USER_ROLES.evt_admin);
+                    changed = true;
+                }
 
-                $rootScope.currentUserData.user.events_hosting.push(event.evt_id);
+                if ($rootScope.currentUserData.user.events_hosting.indexOf(res.data.event.evt_id) < 0) {
+                    $rootScope.currentUserData.user.events_hosting.push(res.data.event.evt_id);
+                    changed = true;
+                }
 
-                UserService.UpdateUser($rootScope.currentUserData.user).then(function(res) {
-                    alert('Your event was added at ' + res.data.timestamp);
-                    $location.path('/home');
-                }, function(res) {
-                    $rootScope.stopAndReport(res.data);
-                });
+                if (changed) {
+                    AuthenticationService.setCurrentUser($rootScope.currentUserData).then(function(res) {
+                        UserService.UpdateUser($rootScope.currentUserData.user).then(function(res) {
+                        }, function(res) {
+                            $rootScope.stopAndReport(res.data);
+                        });
+                    }, function(res) {
+                       $rootScope.stopAndReport(res.data);
+                    });
+                }
             }, function(res){
                 $rootScope.stopAndReport(res.data);
             });
@@ -584,14 +605,15 @@ app.controller('UserCtrl', ['$scope', '$rootScope', '$location', 'USER_ROLES', '
         }
 
         $scope.checkDate = function(startDate,endDate) {
-            $scope.errMessage = '';
             var curDate = new Date();
 
             if(new Date(startDate) > new Date(endDate)){
                alert ("End date should not be before Start Date.");
+               $('#end_date').val("");
             }
             if(new Date(startDate) < curDate){
                alert ("Start date should not be before today.");
+               $('#start_date').val("");
             }
         };
     }

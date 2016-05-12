@@ -1,6 +1,7 @@
 <div class="container body-signin">
+    <p class="container body-signin">
     <form class="form-signin" data-ng-submit="login(email, password)">
-        <h2 class="form-signin-heading white-font">Sign In</h2>
+        <h2 class="form-signin-heading white-font" style="text-align: center" >Sign In</h2>
         <div class="form-group">
             <label for="inputEmail" class="sr-only">Email address</label>
             <input type="email" id="inputEmail" class="form-control" placeholder="Email Address" data-ng-model="email" required autofocus>
@@ -10,9 +11,9 @@
             <input type="password" id="inputPassword" class="form-control" placeholder="Password" data-ng-model="password" required>
         </div>
 
-        <button class="btn btn-lg btn-success btn-block" type="submit">Sign In</button>
+        <button class="btn btn-md btn-success btn-block" type="submit">Login</button>
     </form>
 
     <!--<button class="btn btn-sm btn-default btn-block form-signin">Sign Up</button>-->
-    <a href="#/register" class= " btn btn-default btn-block form-signin" role="button">Sign Up</a>
+    <p class= "btn btn-block form-signin" style="color: white">Don't have an account?<a href="#/register" role="button"> Sign Up</a></p>
 </div> <!-- /container -->
